@@ -6,6 +6,7 @@ import java.util.*
  */
 plugins {
     `java-library`
+    java
 }
 
 
@@ -25,7 +26,9 @@ java {
         // https://docs.gradle.org/6.8.3/userguide/resolution_strategy_tuning.html#resolution_consistency
         useRuntimeClasspathVersions()
     }
+}
 
+tasks.withType<Jar> {
     // Configure the manifest of the jar
     manifest {
         attributes(
