@@ -1,55 +1,16 @@
-import org.ajoberstar.reckon.gradle.ReckonExtension
-import java.text.SimpleDateFormat
-import java.util.Date
+import com.google.protobuf.gradle.*
 
 plugins {
-    // Needed for some dependency stuff (i.e. resolving jar dependencies with java-platform etc)
-    id("dependency-conventions")
-
-    id("org.ajoberstar.reckon")
-
-    id("nebula.ivy-publish")
-
-    // Apply the java-library plugin for API and implementation separation.
-    // https://docs.gradle.org/current/userguide/java_library_plugin.html
-    `java-library`
-}
-
-val artifactory_user: String? by project
-val artifactory_password: String? by project
-
-repositories {
-    maven("https://artifactory.internal.invalid/artifactory/virtexperimental") {
-        credentials {
-            username = artifactory_user
-            password = artifactory_password
-        }
-    }
-}
-
-/**
- * Configuring Reckon (used for semantic versioning)
- * To push the latest tag use:  ./gradlew reckonTagPush -Preckon.stage=final
- * final means the version will be in the form 0.2.0 not 0.2.0-alpha.0.1+20210304T132206Z
- */
-configure<ReckonExtension> {
-    scopeFromProp()
-    stageFromProp("alpha", "beta", "final")
-}
-
-/**
- * Simple task to log the reckoned version
- */
-tasks.register("version") {
-    doLast {
-        logger.lifecycle("Project version is: ${project.version}")
-    }
-}
-
-allprojects {
-    apply {
-        plugin("idea")
-    }
+    // Configures how dependencies are managed, aka versions used etc
+    `dependency-conventions`
+    // Configures the common java settings (version, jars, manifest, locking etc)
+    `java-common-conventions`
+    // Configures the integration tests that can be run
+    `integration-test-conventions`
+    // For common publishing settings
+    `publishing-conventions`
+    // For generating the java classes from the proto files
+    id("com.google.protobuf")
 }
 
 dependencies {
@@ -59,50 +20,94 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda")
     implementation("io.netty:netty-all")
     implementation("org.erlang.otp:jinterface")
+    implementation("commons-codec:commons-codec")
+
+    // because of uses of javax.xml.bind.DatatypeConverter
+    implementation("javax.xml.bind:jaxb-api")
 
     //Test dependencies
-
     testImplementation("org.mockito:mockito-core")
-    testImplementation("org.powermock:powermock-api-mockito")
+    testImplementation("org.powermock:powermock-api-mockito2")
     testImplementation("org.powermock:powermock-module-junit4")
+    testImplementation("org.powermock:powermock-reflect")
     testImplementation("org.hamcrest:hamcrest-core")
     testImplementation("com.jayway.awaitility:awaitility")
 }
 
 /**
- * ------------------------------------------------------------
- *                        Artifact Info
- * ------------------------------------------------------------
+ * ---------------------------------------------
+ *              Base Config
+ * ---------------------------------------------
  */
+group = "com.workday.riak"
 
-val cleanedVersion = project.version.toString().replace("+", "-")
-
-tasks.jar.configure {
-    manifest {
-        attributes("Built-By" to  System.getProperty("user.name"),
-                "Build-Timestamp" to (SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(Date())),
-                "Gradle-Version" to "Gradle ${gradle.gradleVersion}",
-                "Build-Jdk" to "${System.getProperty("java.version")} (${System.getProperty("java.vendor")} ${System.getProperty("java.vm.version")})",
-                "Build-OS" to "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}",
-                "Implementation-Vendor" to "Workday",
-                "Implementation-Version" to version
-        )
-    }
+base {
+    // Sets the name of the jar
+    archivesName.set("riak-client")
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<IvyPublication>("jar") {
-                from(components["java"])
-            }
+gradle.buildFinished {
+    logger.lifecycle("\n------------------------------------------------------------\n")
+    logger.lifecycle("VERSION: ${project.version}")
+    logger.lifecycle("\n------------------------------------------------------------\n")
+}
+
+
+/**
+ * ---------------------------------------------
+ *              Protobuf Generation
+ * ---------------------------------------------
+ */
+// Make then use the internal configuration for dependancies
+configurations.getByName("compileProtoPath").extendsFrom(configurations.getByName("internal"))
+configurations.getByName("testCompileProtoPath").extendsFrom(configurations.getByName("internal"))
+
+sourceSets {
+    main {
+        proto {
+            // Configure it to point at the shared .proto files for the git submodule
+            srcDir("riak_protobuf/src/")
         }
     }
 }
 
-
-gradle.buildFinished {
-    logger.lifecycle("\n------------------------------------------------------------\n")
-    logger.lifecycle("VERSION: $cleanedVersion")
-    logger.lifecycle("\n------------------------------------------------------------\n")
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.+"
+    }
 }
+
+/**
+ * ---------------------------------------------
+ *              Publishing
+ * ---------------------------------------------
+ */
+publishing {
+    publications {
+        create<IvyPublication>("ivy") {
+            module = "riak-client"
+
+            descriptor {
+                author {
+                    name.set("Document Storage Team")
+                }
+                description {
+                    text.set("Java Client for interacting with a Riak Cluster")
+                    homepage.set("https://bitbucket.internal.invalid/projects/DS/repos/workday-riak-client")
+                }
+            }
+
+            versionMapping {
+                usage(Usage.JAVA_API) {
+                    fromResolutionResult()
+                }
+                usage(Usage.JAVA_RUNTIME) {
+                    fromResolutionResult()
+                }
+            }
+
+            from(components["java"])
+        }
+    }
+}
+

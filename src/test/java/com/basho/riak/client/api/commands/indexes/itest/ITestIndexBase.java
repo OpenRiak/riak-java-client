@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.indexes.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Namespace;
 import org.junit.AfterClass;
@@ -27,7 +28,7 @@ public abstract class ITestIndexBase extends ITestBase
     protected static Namespace namespace = new Namespace(bucketName.toString());
 
     @AfterClass
-    public static void teardown() throws ExecutionException, InterruptedException
+    public static void teardown() throws ExecutionException, InterruptedException, ListException
     {
         resetAndEmptyBucket(namespace);
     }

@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.core.operations.*;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -49,7 +50,7 @@ public class ITestSearchOperation extends ISearchTestBase
     }
 
     @AfterClass
-    public static void TearDown() throws ExecutionException, InterruptedException
+    public static void TearDown() throws ExecutionException, InterruptedException, ListException
     {
         cleanupSearchEnvironment(bucketName, indexName);
     }

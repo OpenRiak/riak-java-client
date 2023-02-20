@@ -530,7 +530,7 @@ public class RiakNodeTest
         assertEquals(1, inProgressMap.size());
         node.onException(channel, t);
         await().atMost(500, TimeUnit.MILLISECONDS)
-               .until(fieldIn(operation).ofType(Throwable.class).andWithName("exception"), equalTo(t));
+               .until(fieldIn(operation).ofType(Throwable.class), equalTo(t));
     }
 
     @Test(expected = UnknownHostException.class)

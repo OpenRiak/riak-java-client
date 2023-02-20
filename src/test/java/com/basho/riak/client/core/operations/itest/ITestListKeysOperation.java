@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
@@ -47,84 +48,84 @@ public class ITestListKeysOperation extends ITestBase
     private final String namedBucketType = ITestBase.bucketType.toStringUtf8();
 
     @Test
-    public void testListNoKeysDefaultType() throws InterruptedException, ExecutionException
+    public void testListNoKeysDefaultType() throws InterruptedException, ExecutionException, ListException
     {
         testListNoKeys(defaultBucketType);
     }
 
     @Test
-    public void testListNoKeysDefaultTypeStreaming() throws InterruptedException, ExecutionException
+    public void testListNoKeysDefaultTypeStreaming() throws InterruptedException, ExecutionException, ListException
     {
         testListKeysStreaming(defaultBucketType, 0);
     }
 
     @Test
-    public void testListNoKeysTestType() throws InterruptedException, ExecutionException
+    public void testListNoKeysTestType() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testListNoKeys(namedBucketType);
     }
 
     @Test
-    public void testListNoKeysTestTypeStreaming() throws InterruptedException, ExecutionException
+    public void testListNoKeysTestTypeStreaming() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testListKeysStreaming(namedBucketType, 0);
     }
 
     @Test
-    public void testListKeyDefaultType() throws InterruptedException, ExecutionException
+    public void testListKeyDefaultType() throws InterruptedException, ExecutionException, ListException
     {
         testListSingleKey(defaultBucketType);
     }
 
     @Test
-    public void testListKeyDefaultTypeStreaming() throws InterruptedException, ExecutionException
+    public void testListKeyDefaultTypeStreaming() throws InterruptedException, ExecutionException, ListException
     {
         testListKeysStreaming(defaultBucketType, 1);
     }
 
     @Test
-    public void testListKeyTestType() throws InterruptedException, ExecutionException
+    public void testListKeyTestType() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testListSingleKey(namedBucketType);
     }
 
     @Test
-    public void testListKeyTestTypeStreaming() throws InterruptedException, ExecutionException
+    public void testListKeyTestTypeStreaming() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testListKeysStreaming(namedBucketType, 1);
     }
 
     @Test
-    public void testLargeKeyListDefaultType() throws InterruptedException, ExecutionException
+    public void testLargeKeyListDefaultType() throws InterruptedException, ExecutionException, ListException
     {
         testManyKeyList(defaultBucketType, 1000);
     }
 
     @Test
-    public void testLargeKeyListDefaultTypeStreaming() throws InterruptedException, ExecutionException
+    public void testLargeKeyListDefaultTypeStreaming() throws InterruptedException, ExecutionException, ListException
     {
         testListKeysStreaming(defaultBucketType, 1000);
     }
 
     @Test
-    public void testLargeKeyListTestType() throws InterruptedException, ExecutionException
+    public void testLargeKeyListTestType() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testManyKeyList(namedBucketType, 1000);
     }
 
     @Test
-    public void testLargeKeyListTestTypeStreaming() throws InterruptedException, ExecutionException
+    public void testLargeKeyListTestTypeStreaming() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testListKeysStreaming(namedBucketType, 1000);
     }
 
-    private void testListNoKeys(String bucketType) throws InterruptedException, ExecutionException
+    private void testListNoKeys(String bucketType) throws InterruptedException, ExecutionException, ListException
     {
         final Namespace ns = setupBucket(bucketType, 0);
 
@@ -134,7 +135,7 @@ public class ITestListKeysOperation extends ITestBase
         resetAndEmptyBucket(ns);
     }
 
-    private void testListSingleKey(String bucketType) throws InterruptedException, ExecutionException
+    private void testListSingleKey(String bucketType) throws InterruptedException, ExecutionException, ListException
     {
         final Namespace ns = setupBucket(bucketType, 1);
 
@@ -145,7 +146,7 @@ public class ITestListKeysOperation extends ITestBase
         resetAndEmptyBucket(ns);
     }
 
-    private void testManyKeyList(String bucketType, int numExpected) throws InterruptedException, ExecutionException
+    private void testManyKeyList(String bucketType, int numExpected) throws InterruptedException, ExecutionException, ListException
     {
         final Namespace ns = setupBucket(bucketType, numExpected);
 
@@ -156,7 +157,7 @@ public class ITestListKeysOperation extends ITestBase
         resetAndEmptyBucket(ns);
     }
 
-    private void testListKeysStreaming(String bucketType, int numExpected) throws InterruptedException, ExecutionException
+    private void testListKeysStreaming(String bucketType, int numExpected) throws InterruptedException, ExecutionException, ListException
     {
         final Namespace ns = setupBucket(bucketType, numExpected);
 

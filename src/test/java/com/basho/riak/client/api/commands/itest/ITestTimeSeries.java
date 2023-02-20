@@ -1,5 +1,6 @@
 package com.basho.riak.client.api.commands.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.buckets.FetchBucketProperties;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
@@ -117,11 +118,11 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void test_d_TestListingKeysReturnsThem() throws ExecutionException, InterruptedException
+    public void test_d_TestListingKeysReturnsThem() throws ExecutionException, InterruptedException, ListException
     {
         RiakClient client = new RiakClient(cluster);
 
-        ListKeys listKeys = new ListKeys.Builder(tableName).build();
+        ListKeys listKeys = new ListKeys.Builder(tableName).withAllowListing().build();
 
         final RiakFuture<QueryResult, String> listKeysFuture = client.executeAsync(listKeys);
 

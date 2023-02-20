@@ -1,23 +1,3 @@
- /**
- * Conventions for anything the needs to use dependencies
- * Ensures that the constraints set by the platforms are used (i.e. the 'dependencies' module and any platform boms)
- */
-
-plugins {
-    // Need this plugin for "implementation" + dependency management
-    java
-    // Scan every module independently
-    id("dependency-scanning")
-}
-
-java {
-    consistentResolution {
-        // Avoids compile and runtime using different versions
-        // https://docs.gradle.org/6.8.3/userguide/resolution_strategy_tuning.html#resolution_consistency
-        useRuntimeClasspathVersions()
-    }
-}
-
 configurations {
     all {
         resolutionStrategy {
@@ -37,11 +17,6 @@ configurations {
             }
         }
     }
-}
-
-dependencies {
-    // Use version constraints from dependencies module.
-    implementation(platform(project(":dependencies")))
 }
 
 tasks.register("resolveAndLockAll") {

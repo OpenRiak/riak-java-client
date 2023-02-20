@@ -1,10 +1,7 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.operations.TTBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.*;
-import com.basho.riak.protobuf.RiakTsPB;
-import com.basho.riak.protobuf.RiakMessageCodes;
 
 import java.util.List;
 

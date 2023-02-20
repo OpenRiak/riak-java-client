@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.commands.datatypes.*;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
@@ -37,7 +38,7 @@ import static org.junit.Assert.*;
 public class ITestCrdtApi extends ITestAutoCleanupBase
 {
     @Test
-    public void simpleTest() throws ExecutionException, InterruptedException
+    public void simpleTest() throws ExecutionException, InterruptedException, ListException
     {
         Assume.assumeTrue(testCrdt);
         /**

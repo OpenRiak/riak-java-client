@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.After;
@@ -29,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 public class ITestAutoCleanupBase extends ITestBase
 {
     @After
-    public void afterTest() throws ExecutionException, InterruptedException
+    public void afterTest() throws ExecutionException, InterruptedException, ListException
     {
         resetAndEmptyBucket(bucketName);
         if (testBucketType)

@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
@@ -73,19 +74,19 @@ public class ITestStoreOperation extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testStoreWithVClockAndReturnbodyDefaultType() throws InterruptedException, ExecutionException
+    public void testStoreWithVClockAndReturnbodyDefaultType() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testStoreWithVClockAndReturnbody(bucketType.toString());
     }
 
     @Test
-    public void testStoreWithVClockAndReturnbodyTestType() throws InterruptedException, ExecutionException
+    public void testStoreWithVClockAndReturnbodyTestType() throws InterruptedException, ExecutionException, ListException
     {
         testStoreWithVClockAndReturnbody(Namespace.DEFAULT_BUCKET_TYPE);
     }
 
-    private void testStoreWithVClockAndReturnbody(String bucketType) throws InterruptedException, ExecutionException
+    private void testStoreWithVClockAndReturnbody(String bucketType) throws InterruptedException, ExecutionException, ListException
     {
         // Enable allow_multi, store a new item, then do a read/modify/write
         // using the vclock

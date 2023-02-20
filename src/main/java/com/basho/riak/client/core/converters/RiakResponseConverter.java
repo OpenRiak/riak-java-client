@@ -15,8 +15,6 @@
  */
 package com.basho.riak.client.core.converters;
 
-import com.basho.riak.protobuf.RiakKvPB;
-
 import java.util.concurrent.ExecutionException;
 
 /**

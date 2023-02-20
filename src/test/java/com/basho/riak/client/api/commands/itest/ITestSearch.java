@@ -1,5 +1,6 @@
 package com.basho.riak.client.api.commands.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.search.Search;
 import com.basho.riak.client.core.operations.SearchOperation;
@@ -34,7 +35,7 @@ public class ITestSearch extends ISearchTestBase
     }
 
     @AfterClass
-    public static void TearDown() throws ExecutionException, InterruptedException
+    public static void TearDown() throws ExecutionException, InterruptedException, ListException
     {
         cleanupSearchEnvironment(bucketName, indexName);
     }

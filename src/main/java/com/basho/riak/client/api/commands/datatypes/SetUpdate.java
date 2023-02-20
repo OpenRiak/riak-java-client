@@ -31,9 +31,8 @@ import java.util.Set;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class SetUpdate implements DatatypeUpdate
+public class SetUpdate extends GSetUpdate
 {
-    private final Set<BinaryValue> adds = new HashSet<>();
     private final Set<BinaryValue> removes = new HashSet<>();
 
     /**
@@ -41,28 +40,6 @@ public class SetUpdate implements DatatypeUpdate
      */
     public SetUpdate()
     {
-    }
-
-    /**
-     * Add the provided value to the set in Riak.
-     * @param value the value to be added.
-     * @return a reference to this object.
-     */
-    public SetUpdate add(BinaryValue value)
-    {
-        this.adds.add(value);
-        return this;
-    }
-
-    /**
-     * Add the provided value to the set in Riak.
-     * @param value the value to be added.
-     * @return a reference to this object.
-     */
-    public SetUpdate add(String value)
-    {
-        this.adds.add(BinaryValue.create(value));
-        return this;
     }
 
     /**
@@ -85,15 +62,6 @@ public class SetUpdate implements DatatypeUpdate
     {
         this.removes.add(BinaryValue.create(value));
         return this;
-    }
-
-    /**
-     * Get the set of additions contained in this update.
-     * @return the set of additions.
-     */
-    public Set<BinaryValue> getAdds()
-    {
-        return adds;
     }
 
     /**
@@ -120,4 +88,5 @@ public class SetUpdate implements DatatypeUpdate
     {
         return "Add: " + adds + " Remove: " + removes;
     }
+
 }

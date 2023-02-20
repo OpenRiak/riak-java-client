@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.core.query.Location;
@@ -84,7 +85,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testCrdtCounter() throws ExecutionException, InterruptedException
+    public void testCrdtCounter() throws ExecutionException, InterruptedException, ListException
     {
         assumeTrue(testCrdt);
 
@@ -130,7 +131,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testCrdtSet() throws ExecutionException, InterruptedException
+    public void testCrdtSet() throws ExecutionException, InterruptedException, ListException
     {
         assumeTrue(testCrdt);
 
@@ -186,7 +187,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testCrdtSetInterleved() throws ExecutionException, InterruptedException
+    public void testCrdtSetInterleved() throws ExecutionException, InterruptedException, ListException
     {
         assumeTrue(testCrdt);
 
@@ -233,7 +234,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testCrdtMap() throws ExecutionException, InterruptedException
+    public void testCrdtMap() throws ExecutionException, InterruptedException, ListException
     {
         assumeTrue(testCrdt);
 
@@ -348,21 +349,21 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testComplexMapUpdate() throws InterruptedException, ExecutionException
+    public void testComplexMapUpdate() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testCrdt);
         testComplexMapUpdate(false);
     }
 
     @Test
-    public void testComplexMapUpdateWithReturnBody() throws InterruptedException, ExecutionException
+    public void testComplexMapUpdateWithReturnBody() throws InterruptedException, ExecutionException, ListException
     {
         // This test will currently fail as returnbody is broken in some cases in Riak.
         assumeTrue(testCrdt);
         testComplexMapUpdate(true);
     }
 
-    private void testComplexMapUpdate(boolean returnBody) throws InterruptedException, ExecutionException
+    private void testComplexMapUpdate(boolean returnBody) throws InterruptedException, ExecutionException, ListException
     {
         /*
             Data structure:
@@ -452,7 +453,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testSimpleMap() throws InterruptedException, ExecutionException
+    public void testSimpleMap() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testCrdt);
 

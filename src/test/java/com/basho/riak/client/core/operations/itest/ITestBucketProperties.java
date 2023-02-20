@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
@@ -84,7 +85,7 @@ public class ITestBucketProperties extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testResetBucketProps() throws InterruptedException, ExecutionException
+    public void testResetBucketProps() throws InterruptedException, ExecutionException, ListException
     {
         Namespace namespace = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         StoreBucketPropsOperation.Builder builder =

@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.api.commands.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
@@ -60,7 +61,7 @@ public class ITestBucketKeyMapReduce extends ITestBase
     }
 
     @AfterClass
-    public static void tearDown() throws ExecutionException, InterruptedException
+    public static void tearDown() throws ExecutionException, InterruptedException, ListException
     {
         Namespace ns = new Namespace(mrBucketName);
         resetAndEmptyBucket(ns);

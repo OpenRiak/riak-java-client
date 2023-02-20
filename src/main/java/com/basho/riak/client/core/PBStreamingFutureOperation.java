@@ -17,8 +17,8 @@
 package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.operations.PBFutureOperation;
-import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
@@ -39,7 +39,7 @@ public abstract class PBStreamingFutureOperation<ReturnType, ResponseType, Query
 
     protected PBStreamingFutureOperation(final byte reqMessageCode,
                                          final byte respMessageCode,
-                                         final GeneratedMessage.Builder<?> reqBuilder,
+                                         final Message.Builder reqBuilder,
                                          com.google.protobuf.Parser<ResponseType> respParser,
                                          boolean streamResults)
     {

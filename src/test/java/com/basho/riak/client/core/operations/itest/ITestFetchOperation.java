@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
@@ -52,7 +53,7 @@ public class ITestFetchOperation extends ITestBase
     }
 
     @AfterClass
-    public static void cleanupBuckets() throws ExecutionException, InterruptedException
+    public static void cleanupBuckets() throws ExecutionException, InterruptedException, ListException
     {
         resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString()));
         resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, siblingsBucket));

@@ -157,13 +157,4 @@ public class DefaultNodeManagerTest
         List<RiakNode> unhealthy = Whitebox.getInternalState(nodeManager, "unhealthy");
         assertEquals(mockNodes.size() + 1, healthy.size());
     }
-
-    private class IsException extends ArgumentMatcher<Exception>
-    {
-        @Override
-        public boolean matches(Object argument)
-        {
-            return argument instanceof Exception;
-        }
-    }
 }

@@ -332,8 +332,8 @@ public class TermToBinaryCodec
                     final String s = new String(v.binaryValue(), StandardCharsets.UTF_8);
                     return new Cell(s);
 
-                case BLOB:
-                    return new Cell(v.binaryValue());
+//                case BLOB:
+//                    return new Cell(v.binaryValue());
 
                 default:
                     throw new IllegalStateException(

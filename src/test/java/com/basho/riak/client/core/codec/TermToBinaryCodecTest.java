@@ -283,10 +283,11 @@ public class TermToBinaryCodecTest
            }
          */
 
-        final byte[] input =
-                {(byte)131, 104, 2, // outer tuple arity 2
+        //  TODO no enum BLOB in RiakTsPB.TsColumnType
+        final byte[] input2 =
+            {(byte)131, 104, 2, // outer tuple arity 2
                     100, 0, 11, 116, 115, 113, 117, 101, 114, 121, 114, 101, 115, 112, 104, 3, // tsqueryresp atom
-                    108, 0, 0, 0, 8, // list start arity 8
+                    108, 0, 0, 0, 7, // list start arity 7
                         109, 0, 0, 0, 7, 103, 101, 111, 104, 97, 115, 104, // "geohash"
                         109, 0, 0, 0, 4, 117, 115, 101, 114, // "user
                         109, 0, 0, 0, 4, 116, 105, 109, 101, // "time"
@@ -294,9 +295,8 @@ public class TermToBinaryCodecTest
                         109, 0, 0, 0, 11, 116, 101, 109, 112, 101, 114, 97, 116, 117, 114, 101, // "temperature"
                         109, 0, 0, 0, 8, 117, 118, 95, 105, 110, 100, 101, 120, // "uv_index"
                         109, 0, 0, 0, 8, 111, 98, 115, 101, 114, 118, 101, 100, // "observed"
-                        109, 0, 0, 0, 11, 115, 101, 110, 115, 111, 114, 95, 100, 97, 116, 97, // "sensor_data"
-                    106, // list stop arity 8
-                    108, 0, 0, 0, 8, // list start arity 8
+                    106, // list stop arity 7
+                    108, 0, 0, 0, 7, // list start arity 7
                         100, 0, 7, 118, 97, 114, 99, 104, 97, 114, // varchar atom
                         100, 0, 7, 118, 97, 114, 99, 104, 97, 114, // varchar atom
                         100, 0, 9, 116, 105, 109, 101, 115, 116, 97, 109, 112, // timestamp atom
@@ -304,10 +304,9 @@ public class TermToBinaryCodecTest
                         100, 0, 6, 100, 111, 117, 98, 108, 101, // double atom
                         100, 0, 6, 115, 105, 110, 116, 54, 52, // sint64 atom
                         100, 0, 7, 98, 111, 111, 108, 101, 97, 110, // boolean atom
-                        100, 0, 4, 98, 108, 111, 98, // blob atom
-                    106, // list stop arity 8
+                    106, // list stop arity 7
                     108, 0, 0, 0, 1, // list start arity 1
-                        104, 8, // tuple arity 8
+                        104, 7, // tuple arity 7
                             109, 0, 0, 0, 5, 104, 97, 115, 104, 49, // "hash1"
                             109, 0, 0, 0, 5, 117, 115, 101, 114, 50, // "user 2
                             110, 6, 0, 64, 91, -108, 41, 80, 1, // 1443806600000
@@ -315,10 +314,45 @@ public class TermToBinaryCodecTest
                             106, // empty list / null cell
                             106, // empty list / null cell
                             100, 0, 4, 116, 114, 117, 101, // true atom
-                            109, 0, 0, 0, 8, 0, 1, 2, 3, 4, 5, 6, 7, // <<0,1,2,3,4,5,6,7>>
-                 106};
+                    106};
 
-        final ColumnDescription[] expectedColumnDescriptions = new ColumnDescription[8];
+        // TODO no enum BLOB in RiakTsPB.TsColumnType
+//        final byte[] input =
+//                {(byte)131, 104, 2, // outer tuple arity 2
+//                    100, 0, 11, 116, 115, 113, 117, 101, 114, 121, 114, 101, 115, 112, 104, 3, // tsqueryresp atom
+//                    108, 0, 0, 0, 8, // list start arity 8
+//                        109, 0, 0, 0, 7, 103, 101, 111, 104, 97, 115, 104, // "geohash"
+//                        109, 0, 0, 0, 4, 117, 115, 101, 114, // "user
+//                        109, 0, 0, 0, 4, 116, 105, 109, 101, // "time"
+//                        109, 0, 0, 0, 7, 119, 101, 97, 116, 104, 101, 114, // "weather"
+//                        109, 0, 0, 0, 11, 116, 101, 109, 112, 101, 114, 97, 116, 117, 114, 101, // "temperature"
+//                        109, 0, 0, 0, 8, 117, 118, 95, 105, 110, 100, 101, 120, // "uv_index"
+//                        109, 0, 0, 0, 8, 111, 98, 115, 101, 114, 118, 101, 100, // "observed"
+//                        109, 0, 0, 0, 11, 115, 101, 110, 115, 111, 114, 95, 100, 97, 116, 97, // "sensor_data"
+//                    106, // list stop arity 8
+//                    108, 0, 0, 0, 8, // list start arity 8
+//                        100, 0, 7, 118, 97, 114, 99, 104, 97, 114, // varchar atom
+//                        100, 0, 7, 118, 97, 114, 99, 104, 97, 114, // varchar atom
+//                        100, 0, 9, 116, 105, 109, 101, 115, 116, 97, 109, 112, // timestamp atom
+//                        100, 0, 7, 118, 97, 114, 99, 104, 97, 114, // varchar atom
+//                        100, 0, 6, 100, 111, 117, 98, 108, 101, // double atom
+//                        100, 0, 6, 115, 105, 110, 116, 54, 52, // sint64 atom
+//                        100, 0, 7, 98, 111, 111, 108, 101, 97, 110, // boolean atom
+//                        100, 0, 4, 98, 108, 111, 98, // blob atom
+//                    106, // list stop arity 8
+//                    108, 0, 0, 0, 1, // list start arity 1
+//                        104, 8, // tuple arity 8
+//                            109, 0, 0, 0, 5, 104, 97, 115, 104, 49, // "hash1"
+//                            109, 0, 0, 0, 5, 117, 115, 101, 114, 50, // "user 2
+//                            110, 6, 0, 64, 91, -108, 41, 80, 1, // 1443806600000
+//                            109, 0, 0, 0, 6, 99, 108, 111, 117, 100, 121, // "cloudy"
+//                            106, // empty list / null cell
+//                            106, // empty list / null cell
+//                            100, 0, 4, 116, 114, 117, 101, // true atom
+//                            109, 0, 0, 0, 8, 0, 1, 2, 3, 4, 5, 6, 7, // <<0,1,2,3,4,5,6,7>>
+//                 106};
+
+        final ColumnDescription[] expectedColumnDescriptions = new ColumnDescription[7];
         expectedColumnDescriptions[0] = new ColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR);
         expectedColumnDescriptions[1] = new ColumnDescription("user", ColumnDescription.ColumnType.VARCHAR);
         expectedColumnDescriptions[2] = new ColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP);
@@ -326,16 +360,20 @@ public class TermToBinaryCodecTest
         expectedColumnDescriptions[4] = new ColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE);
         expectedColumnDescriptions[5] = new ColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64);
         expectedColumnDescriptions[6] = new ColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN);
-        expectedColumnDescriptions[7] = new ColumnDescription("sensor_data", ColumnDescription.ColumnType.BLOB);
+        // TODO no enum BLOB in RiakTsPB.TsColumnType
+//        expectedColumnDescriptions[7] = new ColumnDescription("sensor_data", ColumnDescription.ColumnType.BLOB);
 
+        // TODO no enum BLOB in RiakTsPB.TsColumnType
+//        final Row row = new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(1443806600000L),
+//                                new Cell("cloudy"), null, null, new Cell(true), new Cell(new byte[] {0,1,2,3,4,5,6,7}));
         final Row row = new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(1443806600000L),
-                                new Cell("cloudy"), null, null, new Cell(true), new Cell(new byte[] {0,1,2,3,4,5,6,7}));
+                               new Cell("cloudy"), null, null, new Cell(true));
         final Row[] expectedRows = new Row[1];
         expectedRows[0] = (row);
 
         try
         {
-            final QueryResult actual = TermToBinaryCodec.decodeTsResultResponse(input);
+            final QueryResult actual = TermToBinaryCodec.decodeTsResultResponse(input2);
 
             final List<ColumnDescription> actualColumnDescriptions = actual.getColumnDescriptionsCopy();
             final List<Row> actualRows = actual.getRowsCopy();

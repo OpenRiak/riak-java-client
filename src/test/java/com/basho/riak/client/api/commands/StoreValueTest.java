@@ -29,17 +29,13 @@ import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.RiakObjectTest;
-import com.basho.riak.client.core.query.indexes.StringBinIndex;
-import com.basho.riak.client.core.query.links.RiakLink;
-import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.internal.util.reflection.Whitebox;
+import org.powermock.reflect.Whitebox;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;

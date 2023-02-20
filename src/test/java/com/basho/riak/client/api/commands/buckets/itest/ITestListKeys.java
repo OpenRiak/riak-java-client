@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.buckets.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.kv.ListKeys;
 import com.basho.riak.client.core.RiakFuture;
@@ -56,7 +57,7 @@ public class ITestListKeys extends ITestBase
     }
 
     @AfterClass
-    public static void cleanup() throws ExecutionException, InterruptedException
+    public static void cleanup() throws ExecutionException, InterruptedException, ListException
     {
         if (testBucketType)
         {
@@ -65,11 +66,11 @@ public class ITestListKeys extends ITestBase
     }
 
     @Test
-    public void testLargeStreamingListKeys() throws ExecutionException, InterruptedException
+    public void testLargeStreamingListKeys() throws ExecutionException, InterruptedException, ListException
     {
         assumeTrue(testBucketType);
 
-        ListKeys lk = new ListKeys.Builder(typedNamespace).build();
+        ListKeys lk = new ListKeys.Builder(typedNamespace).withAllowListing().build();
 
         final RiakFuture<ListKeys.Response, Namespace> streamFuture =
                 client.executeAsyncStreaming(lk, 200);

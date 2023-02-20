@@ -17,8 +17,8 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.PBStreamingFutureOperation;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;

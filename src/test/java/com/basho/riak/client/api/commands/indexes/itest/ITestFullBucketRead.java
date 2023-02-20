@@ -1,5 +1,6 @@
 package com.basho.riak.client.api.commands.indexes.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.cap.UnresolvedConflictException;
 import com.basho.riak.client.api.commands.kv.CoveragePlan;
@@ -49,7 +50,7 @@ public class ITestFullBucketRead extends ITestBase
     }
 
     @AfterClass
-    public static void AfterClass() throws ExecutionException, InterruptedException
+    public static void AfterClass() throws ExecutionException, InterruptedException, ListException
     {
         resetAndEmptyBucket(defaultNamespace());
     }

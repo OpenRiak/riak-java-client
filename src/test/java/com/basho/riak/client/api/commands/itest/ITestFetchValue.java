@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.cap.ConflictResolver;
 import com.basho.riak.client.api.cap.ConflictResolverFactory;
 import com.basho.riak.client.api.cap.UnresolvedConflictException;
@@ -132,7 +133,7 @@ public class ITestFetchValue extends ITestAutoCleanupBase
     // Leaving it here to investigate
     @Ignore
     @Test
-    public void ReproRiakTombstoneBehavior() throws ExecutionException, InterruptedException
+    public void ReproRiakTombstoneBehavior() throws ExecutionException, InterruptedException, ListException
     {
         // We're back to allow_mult=false as default
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
@@ -166,7 +167,7 @@ public class ITestFetchValue extends ITestAutoCleanupBase
     }
 
     @Test
-    public void resolveSiblingsDefaultType() throws ExecutionException, InterruptedException
+    public void resolveSiblingsDefaultType() throws ExecutionException, InterruptedException, ListException
     {
         ConflictResolver<Pojo> resolver = new MyResolver();
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());

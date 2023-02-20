@@ -4,7 +4,6 @@ import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Alex Moore <amoore at basho dot com>

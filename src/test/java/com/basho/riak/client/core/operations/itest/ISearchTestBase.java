@@ -1,5 +1,6 @@
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
 import com.basho.riak.client.api.commands.kv.StoreValue;
@@ -62,7 +63,7 @@ public class ISearchTestBase extends ITestBase
     }
 
     public static void cleanupSearchEnvironment(String bucketName, String indexName)
-            throws ExecutionException, InterruptedException
+            throws ExecutionException, InterruptedException, ListException
     {
         final RiakClient client = new RiakClient(cluster);
 
@@ -196,7 +197,7 @@ public class ISearchTestBase extends ITestBase
         client.execute(sv);
     }
 
-    private static void cleanupBucket(Namespace namespace) throws ExecutionException, InterruptedException
+    private static void cleanupBucket(Namespace namespace) throws ExecutionException, InterruptedException, ListException
     {
         resetAndEmptyBucket(namespace);
     }

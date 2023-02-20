@@ -20,9 +20,8 @@ import com.basho.riak.client.core.util.BinaryValue;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SetOp implements CrdtOp
+public class SetOp extends GSetOp
 {
-    private final Set<BinaryValue> adds = new HashSet<>();
     private final Set<BinaryValue> removes = new HashSet<>();
 
     public SetOp(Set<BinaryValue> adds, Set<BinaryValue> removes)
@@ -33,9 +32,10 @@ public class SetOp implements CrdtOp
 
     public SetOp() {}
 
+    @Override
     public SetOp add(BinaryValue element)
     {
-        this.adds.add(element);
+        super.add(element);
         return this;
     }
 
@@ -43,11 +43,6 @@ public class SetOp implements CrdtOp
     {
         this.removes.add(element);
         return this;
-    }
-
-    public Set<BinaryValue> getAdds()
-    {
-        return adds;
     }
 
     public Set<BinaryValue> getRemoves()

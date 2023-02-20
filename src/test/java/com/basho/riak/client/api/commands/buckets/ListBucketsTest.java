@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.internal.util.reflection.Whitebox;
+import org.powermock.reflect.Whitebox;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +56,7 @@ public class ListBucketsTest
     private void testListBuckets(String bucketType) throws Exception
     {
         final BinaryValue type = BinaryValue.createFromUtf8(bucketType);
-        ListBuckets.Builder list = new ListBuckets.Builder(type);
+        ListBuckets.Builder list = new ListBuckets.Builder(type).withAllowListing();
         client.execute(list.build());
 
         ArgumentCaptor<FutureOperation> captor =

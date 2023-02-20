@@ -1,12 +1,8 @@
 package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.TTBFutureOperation;
-import com.basho.riak.client.core.query.timeseries.CollectionConverters;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
-import com.basho.riak.client.core.query.timeseries.ConvertibleIterable;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.basho.riak.protobuf.RiakTsPB;
-import com.google.protobuf.ByteString;
 
 import java.util.ArrayList;
 import java.util.Collection;

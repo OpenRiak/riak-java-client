@@ -22,6 +22,7 @@ import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakPB;
 import com.basho.riak.protobuf.RiakPB.RpbPair;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;

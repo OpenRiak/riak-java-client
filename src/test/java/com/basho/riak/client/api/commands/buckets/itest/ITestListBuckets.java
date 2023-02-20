@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.buckets.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.buckets.ListBuckets;
 import com.basho.riak.client.api.commands.kv.StoreValue;
@@ -60,7 +61,7 @@ public class ITestListBuckets extends ITestBase
     }
 
     @AfterClass
-    public static void cleanup() throws ExecutionException, InterruptedException
+    public static void cleanup() throws ExecutionException, InterruptedException, ListException
     {
         resetAndEmptyBucket(defaultNamespace);
         if (testBucketType)
@@ -70,28 +71,28 @@ public class ITestListBuckets extends ITestBase
     }
 
     @Test
-    public void testListBucketsDefaultType() throws InterruptedException, ExecutionException
+    public void testListBucketsDefaultType() throws InterruptedException, ExecutionException, ListException
     {
         testListBuckets(defaultNamespace);
     }
 
     @Test
-    public void testListBucketsTestType() throws InterruptedException, ExecutionException
+    public void testListBucketsTestType() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testListBuckets(typedNamespace);
     }
 
     @Test
-    public void testListBucketsStreamingTestType() throws InterruptedException, ExecutionException
+    public void testListBucketsStreamingTestType() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testListBucketsStreaming(typedNamespace);
     }
 
-    private void testListBuckets(Namespace namespace) throws InterruptedException, ExecutionException
+    private void testListBuckets(Namespace namespace) throws InterruptedException, ExecutionException, ListException
     {
-        ListBuckets listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType()).build();
+        ListBuckets listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType()).withAllowListing().build();
 
         final ListBuckets.Response listResponse = client.execute(listBucketsCommand);
 
@@ -107,9 +108,9 @@ public class ITestListBuckets extends ITestBase
         assertTrue(found);
     }
 
-    private void testListBucketsStreaming(Namespace namespace) throws InterruptedException, ExecutionException
+    private void testListBucketsStreaming(Namespace namespace) throws InterruptedException, ExecutionException, ListException
     {
-        ListBuckets listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType()).build();
+        ListBuckets listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType()).withAllowListing().build();
 
         final RiakFuture<ListBuckets.Response, BinaryValue> streamingFuture =
                 client.executeAsyncStreaming(listBucketsCommand, 500);

@@ -1,5 +1,6 @@
 package com.basho.riak.client.api.commands.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.datatypes.*;
 import com.basho.riak.client.api.commands.datatypes.UpdateDatatype.Option;
@@ -35,7 +36,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
     private final RiakClient client = new RiakClient(cluster);
 
     @Test
-    public void simpleTest() throws ExecutionException, InterruptedException
+    public void simpleTest() throws ExecutionException, InterruptedException, ListException
     {
         Assume.assumeTrue(testCrdt);
 
@@ -124,7 +125,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
         assertTrue(expectedSet.containsAll(setView));
     }
 
-    public void testConflict() throws ExecutionException, InterruptedException
+    public void testConflict() throws ExecutionException, InterruptedException, ListException
     {
         resetAndEmptyBucket(carts);
 
@@ -147,7 +148,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testHyperLogLog() throws ExecutionException, InterruptedException
+    public void testHyperLogLog() throws ExecutionException, InterruptedException, ListException
     {
         Assume.assumeTrue(testHllDataType);
         resetAndEmptyBucket(uniqueUsers);
@@ -175,7 +176,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testNotFoundHyperLogLog() throws ExecutionException, InterruptedException
+    public void testNotFoundHyperLogLog() throws ExecutionException, InterruptedException, ListException
     {
         Assume.assumeTrue(testHllDataType);
         resetAndEmptyBucket(uniqueUsers);

@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
@@ -114,7 +115,7 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
     }
 
     @Test
-    public void matchIndex() throws InterruptedException, ExecutionException
+    public void matchIndex() throws InterruptedException, ExecutionException, ListException
     {
         Assume.assumeTrue(test2i);
         initValuesOneToN(Namespace.DEFAULT_BUCKET_TYPE);
@@ -138,7 +139,7 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
     }
 
     @Test
-    public void matchIndexDiffType() throws InterruptedException, ExecutionException
+    public void matchIndexDiffType() throws InterruptedException, ExecutionException, ListException
     {
         Assume.assumeTrue(testBucketType);
         Assume.assumeTrue(test2i);
@@ -164,7 +165,7 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
     }
 
     @Test
-    public void rangeIndex() throws InterruptedException, ExecutionException
+    public void rangeIndex() throws InterruptedException, ExecutionException, ListException
     {
         Assume.assumeTrue(test2i);
         initValuesInt(Namespace.DEFAULT_BUCKET_TYPE);
@@ -189,7 +190,7 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
     }
 
     @Test
-    public void rangeIndexDiffType() throws InterruptedException, ExecutionException
+    public void rangeIndexDiffType() throws InterruptedException, ExecutionException, ListException
     {
         Assume.assumeTrue(testBucketType);
         Assume.assumeTrue(test2i);

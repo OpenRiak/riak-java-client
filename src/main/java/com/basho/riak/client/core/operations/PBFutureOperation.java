@@ -5,6 +5,7 @@ import com.basho.riak.client.core.RiakMessage;
 
 import com.google.protobuf.GeneratedMessage.Builder;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -20,14 +21,14 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S>
 {
-    protected final Builder<?> reqBuilder;
+    protected final Message.Builder reqBuilder;
     private final com.google.protobuf.Parser<U> respParser;
     protected final byte reqMessageCode;
     private final byte respMessageCode;
 
     protected PBFutureOperation(final byte reqMessageCode,
                                 final byte respMessageCode,
-                                final Builder<?> reqBuilder,
+                                final Message.Builder reqBuilder,
                                 com.google.protobuf.Parser<U> respParser)
     {
         this.reqBuilder = reqBuilder;

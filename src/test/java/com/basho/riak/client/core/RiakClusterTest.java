@@ -238,7 +238,10 @@ public class RiakClusterTest
 
         cluster.cleanup();
 
-        verifyStatic(times(2));
+        verifyStatic(FastThreadLocal.class);
+        FastThreadLocal.destroy();
+        verifyStatic(FastThreadLocal.class);
+        FastThreadLocal.removeAll();
     }
 
     @Test(expected = IllegalStateException.class)

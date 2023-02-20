@@ -15,10 +15,8 @@
  */
 package com.basho.riak.client.core.operations.ts;
 
-import java.util.Iterator;
 import java.util.List;
 
-import com.basho.riak.client.api.commands.timeseries.CoveragePlan;
 import com.basho.riak.client.core.operations.CoveragePlanOperation.Response;
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.CoveragePlanResult;

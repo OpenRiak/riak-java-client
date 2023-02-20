@@ -23,10 +23,9 @@ import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
-import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.protobuf.RiakKvPB;
 import org.junit.Test;
-import org.mockito.internal.util.reflection.Whitebox;
+import org.powermock.reflect.Whitebox;
 
 import java.util.ArrayList;
 

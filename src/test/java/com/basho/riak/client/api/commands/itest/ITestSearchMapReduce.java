@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.mapreduce.MapReduce;
 import com.basho.riak.client.api.commands.mapreduce.SearchMapReduce;
@@ -51,7 +52,7 @@ public class ITestSearchMapReduce extends ISearchTestBase
     }
 
     @AfterClass
-    public static void TearDown() throws ExecutionException, InterruptedException
+    public static void TearDown() throws ExecutionException, InterruptedException, ListException
     {
         cleanupSearchEnvironment(mrBucketName, indexName);
     }

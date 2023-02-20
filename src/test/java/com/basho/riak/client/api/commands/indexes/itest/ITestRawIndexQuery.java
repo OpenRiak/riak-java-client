@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.indexes.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.annotations.RiakBucketName;
 import com.basho.riak.client.api.annotations.RiakIndex;
@@ -74,7 +75,7 @@ public class ITestRawIndexQuery extends ITestBase
     }
 
     @AfterClass
-    public static void Teardown() throws ExecutionException, InterruptedException
+    public static void Teardown() throws ExecutionException, InterruptedException, ListException
     {
         resetAndEmptyBucket(BinaryValue.create(sharedBucket));
     }

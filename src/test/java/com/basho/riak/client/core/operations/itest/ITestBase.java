@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.kv.ListKeys;
 import com.basho.riak.client.api.commands.kv.MultiDelete;
@@ -186,21 +187,21 @@ public abstract class ITestBase
     }
 
     @AfterClass
-    public static void tearDown() throws InterruptedException, ExecutionException, TimeoutException
+    public static void tearDown() throws InterruptedException, ExecutionException, TimeoutException, ListException
     {
         cluster.shutdown().get(2, TimeUnit.SECONDS);
     }
 
-    public static void resetAndEmptyBucket(BinaryValue name) throws InterruptedException, ExecutionException
+    public static void resetAndEmptyBucket(BinaryValue name) throws InterruptedException, ExecutionException, ListException
     {
         resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, name.toString()));
     }
 
-    protected static void resetAndEmptyBucket(Namespace namespace) throws InterruptedException, ExecutionException
+    protected static void resetAndEmptyBucket(Namespace namespace) throws InterruptedException, ExecutionException, ListException
     {
         RiakClient client = new RiakClient(cluster);
 
-        ListKeys listKeys = new ListKeys.Builder(namespace).build();
+        ListKeys listKeys = new ListKeys.Builder(namespace).withAllowListing().build();
         final ListKeys.Response listKeyResponse = client.execute(listKeys);
 
         MultiDelete multiDelete = new MultiDelete.Builder().addLocations(listKeyResponse).build();

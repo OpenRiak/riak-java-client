@@ -24,6 +24,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 /**
@@ -49,10 +50,10 @@ public abstract class MockedResponseOperationTest<O extends FutureOperation, R> 
         super.setup();
 
         mockResponse = Mockito.mock(responseClass);
-        when(mockFuture.get()).thenReturn(mockResponse);
-        when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
-        when(mockFuture.isCancelled()).thenReturn(false);
-        when(mockFuture.isDone()).thenReturn(true);
+        lenient().when(mockFuture.get()).thenReturn(mockResponse);
+        lenient().when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
+        lenient().when(mockFuture.isCancelled()).thenReturn(false);
+        lenient().when(mockFuture.isDone()).thenReturn(true);
 
         setupResponse(mockedResponse());
     }

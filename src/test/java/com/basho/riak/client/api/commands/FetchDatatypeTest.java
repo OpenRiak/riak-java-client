@@ -25,11 +25,12 @@ import com.basho.riak.client.core.query.crdt.types.RiakMap;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
 import org.junit.Test;
-import org.mockito.internal.util.reflection.Whitebox;
+import org.powermock.reflect.Whitebox;
 
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 public class FetchDatatypeTest extends MockedResponseOperationTest<DtFetchOperation, DtFetchOperation.Response>
@@ -46,8 +47,8 @@ public class FetchDatatypeTest extends MockedResponseOperationTest<DtFetchOperat
     {
         super.setupResponse(mockedResponse);
 
-        when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<>()));
-        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[] {'1'}));
+        lenient().when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<>()));
+        lenient().when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[] {'1'}));
     }
 
     @Test
@@ -67,8 +68,7 @@ public class FetchDatatypeTest extends MockedResponseOperationTest<DtFetchOperat
         assertEquals(key, fetchValue.getLocation());
 
         final DtFetchOperation operation = executeAndVerify(fetchValue);
-        final RiakDtPB.DtFetchReq.Builder builder =
-            (RiakDtPB.DtFetchReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
+        final RiakDtPB.DtFetchReq.Builder builder = Whitebox.getInternalState(operation, "reqBuilder");
 
         assertEquals("type", builder.getType().toStringUtf8());
         assertEquals("bucket", builder.getBucket().toStringUtf8());

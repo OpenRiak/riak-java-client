@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
@@ -75,7 +76,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     }
 
     @AfterClass
-    public static void cleanupBuckets() throws ExecutionException, InterruptedException
+    public static void cleanupBuckets() throws ExecutionException, InterruptedException, ListException
     {
         resetAndEmptyBucket(defaultTypeNamespace);
         resetAndEmptyBucket(typedNamespace);

@@ -1,11 +1,9 @@
 package com.basho.riak.client.core.query.timeseries;
 
-import com.basho.riak.protobuf.RiakTsPB;
-import com.basho.riak.protobuf.RiakTsPB.TsRange;
-
-import java.util.Iterator;
 import java.util.List;
 
+import com.basho.riak.protobuf.RiakTsPB;
+import com.basho.riak.protobuf.RiakTsPB.TsRange;
 import org.slf4j.LoggerFactory;
 
 /**

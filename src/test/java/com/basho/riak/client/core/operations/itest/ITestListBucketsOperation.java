@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
@@ -48,59 +49,59 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
     private final String namedBucketType = ITestBase.bucketType.toStringUtf8();
 
     @Test
-    public void testListBucketsDefaultType() throws InterruptedException, ExecutionException
+    public void testListBucketsDefaultType() throws InterruptedException, ExecutionException, ListException
     {
         testBucketList(defaultBucketType, 1);
     }
 
     @Test
-    public void testListBucketsDefaultTypeStreaming() throws ExecutionException, InterruptedException
+    public void testListBucketsDefaultTypeStreaming() throws ExecutionException, InterruptedException, ListException
     {
         testBucketListStreaming(namedBucketType, 1);
     }
 
     @Test
-    public void testListBucketsTestType() throws InterruptedException, ExecutionException
+    public void testListBucketsTestType() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testBucketList(namedBucketType, 1);
     }
 
     @Test
-    public void testListBucketsTestTypeStreaming() throws InterruptedException, ExecutionException
+    public void testListBucketsTestTypeStreaming() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testBucketListStreaming(namedBucketType, 1);
     }
 
     @Test
-    public void testLargeBucketListDefaultType() throws InterruptedException, ExecutionException
+    public void testLargeBucketListDefaultType() throws InterruptedException, ExecutionException, ListException
     {
         testBucketList(defaultBucketType, 10);
     }
 
     @Test
-    public void testLargeBucketListDefaultTypeStreaming() throws InterruptedException, ExecutionException
+    public void testLargeBucketListDefaultTypeStreaming() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testBucketListStreaming(defaultBucketType, 10);
     }
 
     @Test
-    public void testLargeBucketListTestType() throws InterruptedException, ExecutionException
+    public void testLargeBucketListTestType() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testBucketList(namedBucketType, 10);
     }
 
     @Test
-    public void testLargeBucketListTestTypeStreaming() throws InterruptedException, ExecutionException
+    public void testLargeBucketListTestTypeStreaming() throws InterruptedException, ExecutionException, ListException
     {
         assumeTrue(testBucketType);
         testBucketListStreaming(namedBucketType, 10);
     }
 
-    private void testBucketList(String bucketType, int bucketCount) throws InterruptedException, ExecutionException
+    private void testBucketList(String bucketType, int bucketCount) throws InterruptedException, ExecutionException, ListException
     {
         final List<BinaryValue> expectedBuckets = storeObjects(bucketType, bucketCount);
 
@@ -111,7 +112,7 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
         resetAndEmptyBuckets(bucketType, expectedBuckets);
     }
 
-    private void testBucketListStreaming(String bucketType, int bucketCount) throws InterruptedException, ExecutionException
+    private void testBucketListStreaming(String bucketType, int bucketCount) throws InterruptedException, ExecutionException, ListException
     {
         final List<BinaryValue> expectedBuckets = storeObjects(bucketType, bucketCount);
         final ListBucketsOperation listOp = new ListBucketsOperation.Builder()
@@ -167,7 +168,7 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
     }
 
     private void resetAndEmptyBuckets(String bucketType, List<BinaryValue> expectedBucketNames)
-            throws InterruptedException, ExecutionException
+            throws InterruptedException, ExecutionException, ListException
     {
         for (BinaryValue name : expectedBucketNames)
         {
