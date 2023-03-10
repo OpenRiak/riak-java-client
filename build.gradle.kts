@@ -77,6 +77,10 @@ protobuf {
     }
 }
 
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+}
+
 /**
  * ---------------------------------------------
  *              Publishing
