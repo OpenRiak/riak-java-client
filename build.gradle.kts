@@ -36,6 +36,16 @@ dependencies {
 
 /**
  * ---------------------------------------------
+ *              Lock File Update Tasks
+ * ---------------------------------------------
+ */
+val slackToken: String? by project
+tasks.register<LockFileUpdates>("lockfileUpdates")
+tasks.register<CheckoutLockFileUpdatePrTask>("checkoutLockFilePr")
+
+
+/**
+ * ---------------------------------------------
  *              Base Config
  * ---------------------------------------------
  */

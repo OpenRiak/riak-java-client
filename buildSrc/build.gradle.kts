@@ -23,6 +23,16 @@ dependencies {
     // Gradle packages a version of kotlin that is 1.7.+ so match that to avoid pulling in later versions (will need to update when gradle updates)
     implementation(enforcedPlatform("org.jetbrains.kotlin:kotlin-bom:1.7.+"))
 
+    /**
+     * Needed for xray-scanning
+     * Not entirely sure why needed to explicitly add xray-java, without it can't import com.workday.be.xray.Severity
+     */
+    implementation(plugin("wd-xray", "0.+"))
+    implementation("com.workday.be.xray:xray-java:0.+")
+
+    // Needed for handling the results from xray scans (aka jiras slack etc)
+    implementation(plugin("xray-jira-automator", "0.+"))
+
     // For performing http requests
     implementation("com.squareup.okhttp3:okhttp:4.+") {
         because("Needed for Http Requests in gradle scripts")
@@ -37,6 +47,19 @@ dependencies {
     implementation(plugin("com.google.protobuf", version = "0.+"))
 
     implementation("com.bmuschko:gradle-docker-plugin:9.+")
+
+    /**
+     * Slack integration
+     */
+    implementation("com.slack.api:slack-api-client:1.+")
+    implementation("com.slack.api:slack-api-model-kotlin-extension:1.+")
+    implementation("com.slack.api:slack-api-client-kotlin-extension:1.+")
+
+    /**
+     * Git Integration
+     */
+    implementation("org.eclipse.jgit:org.eclipse.jgit:6.+")
+    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:6.+")
 }
 
 dependencyLocking {
