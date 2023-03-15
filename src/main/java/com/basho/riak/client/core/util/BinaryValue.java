@@ -39,7 +39,7 @@ import java.util.Arrays;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public final class BinaryValue
+public class BinaryValue
 {
     /**
      * It is expected that UTF-8 charset is available.

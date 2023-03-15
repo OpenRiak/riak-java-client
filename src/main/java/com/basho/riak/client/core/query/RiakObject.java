@@ -49,7 +49,7 @@ import java.nio.charset.Charset;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public final class RiakObject
+public class RiakObject
 {
     /**
      * The default content type assigned when storing in Riak if one is not
