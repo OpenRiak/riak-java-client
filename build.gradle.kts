@@ -99,7 +99,7 @@ java {
 publishing {
     publications {
         create<IvyPublication>("ivy") {
-            module = "riak-client"
+            module = "wd-riak-client"
 
             descriptor {
                 author {
