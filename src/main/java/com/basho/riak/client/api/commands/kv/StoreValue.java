@@ -514,4 +514,11 @@ public final class StoreValue extends GenericRiakCommand.GenericRiakCommandWithS
                 + " typeReference: %s, vclock: %s}", namespace, key, options,
                 value, typeReference, vclock);
     }
+
+    /**
+     * Allow package private access to the value for unit testing purposes.
+     */
+    Object getValue() {
+        return value;
+    }
 }
