@@ -1639,4 +1639,52 @@ public class RiakNode implements RiakResponseListener
             return buildNodes(builder, Arrays.asList(remoteAddresses));
         }
     }
+
+    /**
+     * For unit testing only.
+     *
+     * Override any necessary methods in Builder for setting state required in end-user tests that stub out this class.
+     *
+     * // TODO Consider creating a test-kit module for these types of changes in future.
+     */
+    public static class TestBuilder extends Builder {
+
+        private State state;
+
+        public TestBuilder() {
+        }
+
+        /**
+         * Specifies the remote host and remote port for this RiakNode.
+         *
+         * @param hp - host and port
+         * @return this
+         * @see #DEFAULT_REMOTE_PORT
+         *
+         * @see HostAndPort
+         */
+        @Override
+        public TestBuilder withRemoteAddress(HostAndPort hp) {
+            super.withRemoteAddress(hp);
+            return this;
+        }
+
+        /**
+         * Allows a specific state to be set for the node
+         *
+         * @param state The state to set for the node
+         * @return a reference to this object.
+         */
+        public TestBuilder withState(State state) {
+            this.state = state;
+            return this;
+        }
+
+        public RiakNode build() {
+            RiakNode node = super.build();
+            node.state = state;
+            return node;
+        }
+
+    }
 }
