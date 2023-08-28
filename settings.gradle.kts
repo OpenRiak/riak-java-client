@@ -42,6 +42,9 @@ plugins {
  */
 configure<ReckonExtension> {
     stages("alpha", "beta", "final")
+
+    setDefaultInferredScope("minor")
+
     // Set the stage, aka are we building the final version, or is this a alpha/beta build
     setStageCalc(calcStageFromProp())
 

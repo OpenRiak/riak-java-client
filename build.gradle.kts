@@ -1,4 +1,6 @@
 import com.google.protobuf.gradle.*
+import com.workday.blobitory.gradle.PrintVersionPlugin
+import com.workday.blobitory.gradle.PrintVersionPluginExtension
 
 plugins {
     // Configures how dependencies are managed, aka versions used etc
@@ -56,12 +58,12 @@ base {
     archivesName.set("riak-client")
 }
 
-gradle.buildFinished {
-    logger.lifecycle("\n------------------------------------------------------------\n")
-    logger.lifecycle("VERSION: ${project.version}")
-    logger.lifecycle("\n------------------------------------------------------------\n")
-}
 
+
+apply<PrintVersionPlugin>()
+configure<PrintVersionPluginExtension> {
+    version.set(project.version.toString())
+}
 
 /**
  * ---------------------------------------------

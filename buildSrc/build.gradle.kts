@@ -20,8 +20,8 @@ tasks.withType<KotlinCompile> {
 
 
 dependencies {
-    // Gradle packages a version of kotlin that is 1.7.+ so match that to avoid pulling in later versions (will need to update when gradle updates)
-    implementation(enforcedPlatform("org.jetbrains.kotlin:kotlin-bom:1.7.+"))
+    // Gradle packages a version of kotlin that is 1.9.+ so match that to avoid pulling in later versions (will need to update when gradle updates)
+    implementation(enforcedPlatform("org.jetbrains.kotlin:kotlin-bom:1.9.+"))
 
     /**
      * Needed for xray-scanning
