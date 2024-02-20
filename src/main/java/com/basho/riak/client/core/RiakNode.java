@@ -611,7 +611,7 @@ public class RiakNode implements RiakResponseListener
         }
         else
         {
-            logger.debug("Operation {} not being executed Riaknode {}:{}; no connections available",
+            logger.debug("Operation {} not being executed RiakNode {}:{}; no connections available",
                          System.identityHashCode(operation), remoteAddress, port);
             return false;
         }

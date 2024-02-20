@@ -3,6 +3,8 @@ import com.bmuschko.gradle.docker.tasks.container.DockerExecContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
 import com.bmuschko.gradle.docker.tasks.image.DockerPullImage
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
 
 /**
  * Config for a java library
@@ -20,32 +22,24 @@ plugins {
  * --------------------------------
  */
 
-val riakType: String? by project
-val baseImage = riakType ?: "riak-ts"
-val imageTag = if (baseImage == "riak-ts") {
-    // Looks like some of the TS tests depend on 1.5 features (and check for that), but they need that BLOB enum value which we dont have it the proto files yet
-    "1.4.0"
-} else {
-    "latest"
-}
-// TODO This is pulled from https://hub.docker.com/r/basho/riak-ts
-//      should look into using the version of riak used in production instead
-val riakImage = "basho/$baseImage:$imageTag"
+val baseImage = "workday-riak-centos9"
+val riakImage = "$baseImage:3.2.34-centos9"
 
 /**
  * --------------------------------
  *          Docker Setup
  * --------------------------------
  */
-val pullImage by tasks.creating(DockerPullImage::class) {
-    image.set(riakImage)
-}
+ 
+//val pullImage by tasks.creating(DockerPullImage::class) {
+//    image.set(riakImage)
+//}
 
 val createContainer by tasks.creating(DockerCreateContainer::class) {
-    dependsOn(pullImage)
+    //dependsOn(pullImage)
 
     containerName.set(baseImage)
-    targetImageId(pullImage.image)
+    targetImageId("30de46514b1f")
 
     hostConfig.portBindings.set(listOf("8087:8087", "8098:8098"))
     hostConfig.autoRemove.set(true)
@@ -62,7 +56,7 @@ val waitForRiak by tasks.creating(DockerExecContainer::class) {
 
     targetContainerId(startContainer.containerId)
     commands.set(listOf(
-            arrayOf("riak-admin", "wait-for-service", "riak_kv")
+            arrayOf("riak", "ping")
     ))
 }
 
@@ -70,7 +64,7 @@ val configureRiak by tasks.creating(Exec::class) {
     dependsOn(waitForRiak)
 
     executable = "bash"
-    commandLine("./riak_tools/riak-cluster-config", "docker exec $baseImage riak-admin", 8098, false, false, "riak_tools/bucket-types")
+    commandLine("./riak_tools/riak-cluster-config", "docker exec $baseImage riak admin", 8098, false, false, "riak_tools/bucket-types")
 }
 
 val stopContainer by tasks.creating(DockerStopContainer::class) {
@@ -89,7 +83,7 @@ val integrationTest = task<Test>("itest") {
 
     shouldRunAfter(tasks.test)
     dependsOn(configureRiak)
-    finalizedBy(stopContainer)
+    //finalizedBy(stopContainer)
 
     useJUnit()
 

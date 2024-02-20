@@ -1,8 +1,8 @@
-[submodule "riak_protobuf"]
-	path = riak_protobuf
-	url = ssh://git@bitbucket.internal.invalid:7999/scm/dssst/riak_pb.git
-	branch = workday-develop-3.0
 [submodule "riak_tools"]
 	path = riak_tools
 	url = ssh://git@bitbucket.internal.invalid:7999/scm/dssst/riak-client-tools.git
 	branch = master
+[submodule "riak_pb"]
+	path = riak_pb
+	url = ssh://git@bitbucket.internal.invalid:7999/dssst/riak_pb.git
+	branch = workday-develop-3.2

@@ -12,7 +12,7 @@ import java.util.List;
  * Time Series Store Command
  * Allows you to store data into a Time Series table.
  * Each row to be stored must have it's cells ordered the same as the table definition.
- * To view the table definition, execute <pre>riak-admin bucket-type status <bucket-type-of-TimeSeries-table></pre>
+ * To view the table definition, execute <pre>riak admin bucket-type status <bucket-type-of-TimeSeries-table></pre>
  * on any Riak node in the cluster.
  *
  * @author Alex Moore <amoore at basho dot com>

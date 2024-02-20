@@ -106,8 +106,8 @@ public abstract class ITestBase
          *
          * You need to create a bucket type in Riak for YZ:
          *
-         * riak-admin bucket-type create yokozuna '{"props":{}}'
-         * riak-admin bucket-type activate yokozuna
+         * riak admin bucket-type create yokozuna '{"props":{}}'
+         * riak admin bucket-type activate yokozuna
          */
         yokozunaBucketType = BinaryValue.create("yokozuna");
         testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna", "true"));
@@ -117,8 +117,8 @@ public abstract class ITestBase
          *
          * you must create the type 'plain' to use this:
          *
-         * riak-admin bucket-type create plain '{"props":{}}'
-         * riak-admin bucket-type activate plain
+         * riak admin bucket-type create plain '{"props":{}}'
+         * riak admin bucket-type activate plain
          */
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype", "true"));
         bucketType = BinaryValue.unsafeCreate("plain".getBytes());
@@ -137,12 +137,12 @@ public abstract class ITestBase
          * create the following bucket types in your riak instance
          * with the corresponding bucket properties.
          *
-         * riak-admin bucket-type create maps '{"props":{"allow_mult":true, "datatype": "map"}}'
-         * riak-admin bucket-type create sets '{"props":{"allow_mult":true, "datatype": "set"}}'
-         * riak-admin bucket-type create counters '{"props":{"allow_mult":true, "datatype": "counter"}}'
-         * riak-admin bucket-type activate maps
-         * riak-admin bucket-type activate sets
-         * riak-admin bucket-type activate counters
+         * riak admin bucket-type create maps '{"props":{"allow_mult":true, "datatype": "map"}}'
+         * riak admin bucket-type create sets '{"props":{"allow_mult":true, "datatype": "set"}}'
+         * riak admin bucket-type create counters '{"props":{"allow_mult":true, "datatype": "counter"}}'
+         * riak admin bucket-type activate maps
+         * riak admin bucket-type activate sets
+         * riak admin bucket-type activate counters
          */
         counterBucketType = BinaryValue.create("counters");
         setBucketType = BinaryValue.create("sets");
