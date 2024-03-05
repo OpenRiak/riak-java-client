@@ -94,6 +94,7 @@ public interface Constants
     public static final String OPERATION_ENCODER = "operationEncoder";
     public static final String RESPONSE_HANDLER = "responseHandler";
     public static final String SSL_HANDLER = "sslHandler";
+    public static final String TIMEOUT_HANDLER = "timeoutHandler";
     public static final String HEALTHCHECK_CODEC = "healthCheckCodec";
 
     public static final String CLIENT_OPTION_CHARSET = "com.basho.riak.client.DefaultCharset";
