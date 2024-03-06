@@ -96,6 +96,7 @@ public class RiakNodeTest
             .withRemoteAddress(REMOTE_ADDRESS)
             .withExecutor(EXECUTOR)
             .withBootstrap(BOOTSTRAP)
+                .withReadTimeout(2 * CONNECTION_TIMEOUT)
             .build();
 
         assertEquals(node.getRemoteAddress(), REMOTE_ADDRESS);
@@ -107,6 +108,7 @@ public class RiakNodeTest
         assertEquals(node.getMinConnections(), MIN_CONNECTIONS);
         assertEquals(node.getRemoteAddress(), REMOTE_ADDRESS);
         assertEquals(node.availablePermits(), MAX_CONNECTIONS);
+        assertEquals(node.getReadTimeoutInMillis(), 2 * CONNECTION_TIMEOUT);
         assertEquals(node.getPort(), PORT);
     }
 

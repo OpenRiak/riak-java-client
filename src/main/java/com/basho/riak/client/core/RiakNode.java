@@ -88,7 +88,7 @@ public class RiakNode implements RiakResponseListener
     private volatile long idleTimeoutInNanos;
     private volatile int connectionTimeout;
     private volatile boolean blockOnMaxConnections;
-    private volatile long readTimeoutInMillis;
+    private volatile int readTimeoutInMillis;
 
     private HealthCheckFactory healthCheckFactory;
 
@@ -548,6 +548,15 @@ public class RiakNode implements RiakResponseListener
         return permits.availablePermits();
     }
 
+    /**
+     *
+     * @return the TCP Read Timeout in milliseconds
+     */
+    public int getReadTimeoutInMillis() {
+        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
+        return readTimeoutInMillis;
+    }
+
     public void addStateListener(NodeStateListener listener)
     {
         stateListeners.add(listener);
@@ -586,7 +595,7 @@ public class RiakNode implements RiakResponseListener
         Channel channel = getConnection();
         if (channel != null)
         {
-            // Add a timeout handler to the pipeline if the readTIeout is set
+            // Add a timeout handler to the pipeline if the readTimeout is set
             if (readTimeoutInMillis > 0)
             {
                 channel.pipeline()
