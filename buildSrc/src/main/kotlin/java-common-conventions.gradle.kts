@@ -15,7 +15,7 @@ plugins {
  *  -----------------------------------------------
  */
 java {
-    // Explicitly set the target and source compatability to 8
+    // Explicitly set the target and source compatability to 11
     toolchain.languageVersion.set(JavaLanguageVersion.of(11))
 
     // Include a sources jar
