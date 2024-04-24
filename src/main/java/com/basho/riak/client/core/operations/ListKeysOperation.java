@@ -35,7 +35,7 @@ public class ListKeysOperation extends PBStreamingFutureOperation<ListKeysOperat
         super(RiakMessageCodes.MSG_ListKeysReq,
                 RiakMessageCodes.MSG_ListKeysResp,
                 builder.reqBuilder,
-                RiakKvPB.RpbListKeysResp.PARSER,
+                RiakKvPB.RpbListKeysResp.parser(),
                 builder.streamResults);
 
         this.namespace = builder.namespace;

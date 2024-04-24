@@ -59,8 +59,6 @@ public class UpdateValueTest
     @SuppressWarnings("unchecked")
     public void init() throws Exception
     {
-        MockitoAnnotations.initMocks(this);
-
         riakObject = new RiakObject();
         riakObject.setValue(BinaryValue.create(new byte[] {'O', '_', 'o'}));
 

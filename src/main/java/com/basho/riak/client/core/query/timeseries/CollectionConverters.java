@@ -32,7 +32,7 @@ public final class CollectionConverters
         final RiakTsPB.TsColumnDescription.Builder columnBuilder = RiakTsPB.TsColumnDescription.newBuilder();
         columnBuilder.setName(ByteString.copyFromUtf8(column.getName()));
 
-        columnBuilder.setType(RiakTsPB.TsColumnType.valueOf(column.getType().ordinal()));
+        columnBuilder.setType(RiakTsPB.TsColumnType.forNumber(column.getType().ordinal()));
 
         return columnBuilder.build();
     }

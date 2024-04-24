@@ -37,7 +37,7 @@ public class ListBucketsOperation extends PBStreamingFutureOperation<ListBuckets
         super(RiakMessageCodes.MSG_ListBucketsReq,
                 RiakMessageCodes.MSG_ListBucketsResp,
                 builder.reqBuilder,
-                RiakKvPB.RpbListBucketsResp.PARSER,
+                RiakKvPB.RpbListBucketsResp.parser(),
                 builder.streamResults);
 
         this.bucketType = builder.bucketType;

@@ -40,7 +40,7 @@ public class CoveragePlanOperation extends PBFutureOperation<CoveragePlanResult,
         super(RiakMessageCodes.MSG_TsCoverageReq,
                 RiakMessageCodes.MSG_TsCoverageResp,
                 builder.reqBuilder,
-                RiakTsPB.TsCoverageResp.PARSER);
+                RiakTsPB.TsCoverageResp.parser());
 
         this.queryText = builder.queryText;
         this.tableName = builder.tableName;

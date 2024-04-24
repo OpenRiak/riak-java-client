@@ -17,44 +17,41 @@ package com.basho.riak.client.core;
 
 import java.util.LinkedList;
 import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
-import static org.mockito.Matchers.argThat;
+
 import static org.mockito.Mockito.*;
+
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 /**
- *
  * @author Brian Roach <roach at basho dot com>
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(FutureOperation.class)
-public class DefaultNodeManagerTest
-{
+public class DefaultNodeManagerTest {
     private List<RiakNode> mockNodes;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         mockNodes = new LinkedList<>();
-        for (int i = 0; i < 5; i++)
-        {
+        for (int i = 0; i < 5; i++) {
             RiakNode mock = mock(RiakNode.class);
             mockNodes.add(mock);
         }
     }
 
     @Test
-    public void init()
-    {
+    public void init() {
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);
 
@@ -63,8 +60,7 @@ public class DefaultNodeManagerTest
     }
 
     @Test
-    public void executeOnNodeSuccess()
-    {
+    public void executeOnNodeSuccess() {
         FutureOperation operation = PowerMockito.mock(FutureOperation.class);
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         doReturn(false).when(mockNodes.get(0)).execute(operation);
@@ -79,22 +75,19 @@ public class DefaultNodeManagerTest
     }
 
     @Test
-    public void executeOnNodeFailure()
-    {
+    public void executeOnNodeFailure() {
         FutureOperation operation = PowerMockito.mock(FutureOperation.class);
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);
         boolean executed = nodeManager.executeOnNode(operation, null);
-        for (RiakNode mockNode : mockNodes)
-        {
+        for (RiakNode mockNode : mockNodes) {
             verify(mockNode).execute(operation);
         }
         assertFalse(executed);
     }
 
     @Test
-    public void removeUnhealthyNode()
-    {
+    public void removeUnhealthyNode() {
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);
         nodeManager.nodeStateChanged(mockNodes.get(0), RiakNode.State.HEALTH_CHECKING);
@@ -106,8 +99,7 @@ public class DefaultNodeManagerTest
     }
 
     @Test
-    public void restoreHealthyNode()
-    {
+    public void restoreHealthyNode() {
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);
         nodeManager.nodeStateChanged(mockNodes.get(0), RiakNode.State.HEALTH_CHECKING);
@@ -120,8 +112,7 @@ public class DefaultNodeManagerTest
     }
 
     @Test
-    public void removeShutdownNode()
-    {
+    public void removeShutdownNode() {
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);
         nodeManager.nodeStateChanged(mockNodes.get(0), RiakNode.State.SHUTDOWN);
@@ -133,8 +124,7 @@ public class DefaultNodeManagerTest
     }
 
     @Test
-    public void removeNode()
-    {
+    public void removeNode() {
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);
         nodeManager.removeNode(mockNodes.get(0));
@@ -147,8 +137,7 @@ public class DefaultNodeManagerTest
     }
 
     @Test
-    public void addNode()
-    {
+    public void addNode() {
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);
         RiakNode newNode = mock(RiakNode.class);

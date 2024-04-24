@@ -13,7 +13,6 @@ import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.timeseries.*;
 import org.junit.*;
-import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import java.util.*;
@@ -66,9 +65,6 @@ public class ITestTimeSeries extends ITestTsBase
     {
         assumeTrue("Timeseries 1.5 features not supported in this test environment, skipping tests.", testTs_1_5_Features());
     }
-
-    @Rule
-    public ExpectedException thrown= ExpectedException.none();
 
     @Test
     public void test_a_TestCreateTableAndChangeNVal() throws InterruptedException, ExecutionException
@@ -391,9 +387,6 @@ public class ITestTimeSeries extends ITestTsBase
     {
         assumeTrue(security);
 
-        thrown.expect(ExecutionException.class);
-        thrown.expectMessage("Security is enabled, please STARTTLS first");
-
         // Build connection WITHOUT security
         final RiakNode node = new RiakNode.Builder().withRemoteAddress(hostname).withRemotePort(pbcPort).build();
         final RiakCluster cluster = new RiakCluster.Builder(node).build();
@@ -402,12 +395,16 @@ public class ITestTimeSeries extends ITestTsBase
 
         Query query = new Query.Builder("DESCRIBE " + tableName).build();
 
-        client.execute(query);
+        Assert.assertThrows(
+                "Security is enabled, please STARTTLS first",
+                ExecutionException.class,
+                () -> client.execute(query)
+        );
     }
 
     private static List<FullColumnDescription> GetCreatedTableFullDescriptions()
     {
-        return GeoCheckin_1_5_TableDefinition.getFullColumnDescriptions().stream().collect(Collectors.toList());
+        return new ArrayList<>(GeoCheckin_1_5_TableDefinition.getFullColumnDescriptions());
     }
 
     private static <T> List<T> toList(Iterator<T> itor)

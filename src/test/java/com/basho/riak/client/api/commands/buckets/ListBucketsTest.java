@@ -11,16 +11,15 @@ import com.google.protobuf.ByteString;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,6 +28,7 @@ import static org.mockito.Mockito.when;
  * @author empovit
  * @since 2.0.3
  */
+@RunWith(MockitoJUnitRunner.class)
 public class ListBucketsTest
 {
     @Mock RiakCluster mockCluster;
@@ -40,14 +40,8 @@ public class ListBucketsTest
     @SuppressWarnings("unchecked")
     public void init() throws Exception
     {
-        MockitoAnnotations.initMocks(this);
         when(mockResponse.getBuckets()).thenReturn(new ArrayList<>());
         when(mockFuture.get()).thenReturn(mockResponse);
-        when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
-        when(mockFuture.getNow()).thenReturn(mockResponse);
-        when(mockFuture.isCancelled()).thenReturn(false);
-        when(mockFuture.isDone()).thenReturn(true);
-        when(mockFuture.isSuccess()).thenReturn(true);
         doReturn(mockFuture).when(mockCluster).<ListBucketsOperation,Location>execute(any(FutureOperation.class));
         client = new RiakClient(mockCluster);
     }

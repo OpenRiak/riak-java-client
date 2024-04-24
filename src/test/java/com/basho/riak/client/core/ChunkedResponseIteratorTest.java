@@ -1,14 +1,11 @@
 package com.basho.riak.client.core;
 
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.stubbing.Answer;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -17,8 +14,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TransferQueue;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.powermock.api.mockito.PowerMockito.when;
-import static org.mockito.Matchers.any;
 
 /**
  * @author Alex Moore <amoore at basho dot com>
@@ -27,8 +24,6 @@ import static org.mockito.Matchers.any;
 @PrepareForTest(PBStreamingFutureOperation.class)
 public class ChunkedResponseIteratorTest
 {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Mock
     private TransferQueue<FakeResponse> fakeQueue;
@@ -72,7 +67,7 @@ public class ChunkedResponseIteratorTest
                 // so we'll use that to simulate a Thread interrupt.
                 new ChunkedResponseIterator<>(coreFuture,
                                               timeout,
-                                              Long::new,
+                                              Long::valueOf,
                                               FakeResponse::iterator);
             }
             catch (InterruptedException e)
@@ -117,13 +112,13 @@ public class ChunkedResponseIteratorTest
                                 });
 
                 ChunkedResponseIterator<Long, FakeResponse, Integer> chunkedResponseIterator =
-                        new ChunkedResponseIterator<>(coreFuture, timeout, Long::new, FakeResponse::iterator);
+                        new ChunkedResponseIterator<>(coreFuture, timeout, Long::valueOf, FakeResponse::iterator);
 
                 assertTrue(chunkedResponseIterator.hasNext());
-                assertEquals(new Long(1), chunkedResponseIterator.next());
+                assertEquals(Long.valueOf(1), chunkedResponseIterator.next());
                 // Should hit InterruptedException here, and then take care of it.
                 assertTrue(chunkedResponseIterator.hasNext());
-                assertEquals(new Long(2), chunkedResponseIterator.next());
+                assertEquals(Long.valueOf(2), chunkedResponseIterator.next());
             }
             catch (InterruptedException e)
             {
@@ -166,10 +161,10 @@ public class ChunkedResponseIteratorTest
                                     });
 
                 ChunkedResponseIterator<Long, FakeResponse, Integer> chunkedResponseIterator =
-                        new ChunkedResponseIterator<>(coreFuture, timeout, Long::new, FakeResponse::iterator);
+                        new ChunkedResponseIterator<>(coreFuture, timeout, Long::valueOf, FakeResponse::iterator);
 
                 assertTrue(chunkedResponseIterator.hasNext());
-                assertEquals(new Long(1), chunkedResponseIterator.next());
+                assertEquals(Long.valueOf(1), chunkedResponseIterator.next());
                 // InterruptedException should happen when we try to load the next chunk,
                 // But the catch + next attempt to load a chunk should check to see if we're done.
                 assertFalse(chunkedResponseIterator.hasNext());
@@ -220,7 +215,7 @@ public class ChunkedResponseIteratorTest
                 });
 
         final ChunkedResponseIterator<Long, FakeResponse, Integer> iterator =
-                new ChunkedResponseIterator<>(coreFuture, 50, Long::new, FakeResponse::iterator);
+                new ChunkedResponseIterator<>(coreFuture, 50, Long::valueOf, FakeResponse::iterator);
 
         assertEquals(1l, iterator.next().longValue());
         assertEquals(2l, iterator.next().longValue());
@@ -229,8 +224,10 @@ public class ChunkedResponseIteratorTest
 
         assertFalse(iterator.hasNext());
 
-        exception.expect(NoSuchElementException.class);
-        iterator.next();
+        Assert.assertThrows(
+                NoSuchElementException.class,
+                iterator::next
+        );
     }
 
     static abstract class FakeResponse implements Iterable<Integer> {}

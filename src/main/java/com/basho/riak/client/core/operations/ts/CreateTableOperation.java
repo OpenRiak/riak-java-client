@@ -43,7 +43,7 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
         super(RiakMessageCodes.MSG_TsQueryReq,
                 RiakMessageCodes.MSG_TsQueryResp,
                 builder.reqBuilder,
-                RiakTsPB.TsQueryResp.PARSER);
+                RiakTsPB.TsQueryResp.parser());
 
         this.queryText = builder.queryText;
     }

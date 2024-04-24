@@ -70,7 +70,7 @@ configure<PrintVersionPluginExtension> {
  *              Protobuf Generation
  * ---------------------------------------------
  */
-// Make then use the internal configuration for dependancies
+// Make then use the internal configuration for dependencies
 configurations.getByName("compileProtoPath").extendsFrom(configurations.getByName("internal"))
 configurations.getByName("testCompileProtoPath").extendsFrom(configurations.getByName("internal"))
 
@@ -87,10 +87,6 @@ protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:3.+"
     }
-}
-
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
 }
 
 /**
@@ -115,7 +111,7 @@ publishing {
 
             versionMapping {
                 usage(Usage.JAVA_API) {
-                    fromResolutionResult()
+                    fromResolutionResult( )
                 }
                 usage(Usage.JAVA_RUNTIME) {
                     fromResolutionResult()

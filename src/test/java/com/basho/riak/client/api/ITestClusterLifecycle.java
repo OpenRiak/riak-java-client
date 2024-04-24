@@ -7,9 +7,8 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
-import org.junit.Rule;
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,9 +31,6 @@ public class ITestClusterLifecycle extends ITestBase
     protected static boolean testLifecycle;
     protected static Random random = new Random();
     private final Logger logger = LoggerFactory.getLogger(ITestClusterLifecycle.class);
-
-    @Rule
-    public ExpectedException thrown= ExpectedException.none();
 
     public ITestClusterLifecycle() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException
     {
@@ -91,9 +87,6 @@ public class ITestClusterLifecycle extends ITestBase
     {
         assumeTrue(testLifecycle);
 
-        thrown.expect(ExecutionException.class);
-        thrown.expectMessage(containsString("no_type"));
-
         RiakClient client = null;
 
         try
@@ -102,7 +95,13 @@ public class ITestClusterLifecycle extends ITestBase
             cluster.start();
 
             final Namespace namespace = new Namespace("doesnotexist", Integer.toString(random.nextInt()));
-            createAndStoreObject(client, new Location(namespace, "no_type"));
+
+            RiakClient riakClient = client;
+            Assert.assertThrows(
+                    "no_type",
+                    ExecutionException.class,
+                    () -> createAndStoreObject(riakClient, new Location(namespace, "no_type"))
+            );
         }
         finally
         {

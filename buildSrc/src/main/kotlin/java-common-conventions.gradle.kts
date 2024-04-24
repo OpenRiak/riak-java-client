@@ -16,7 +16,7 @@ plugins {
  */
 java {
     // Explicitly set the target and source compatability to 8
-    toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
 
     // Include a sources jar
     withSourcesJar()
@@ -26,6 +26,13 @@ java {
         // https://docs.gradle.org/6.8.3/userguide/resolution_strategy_tuning.html#resolution_consistency
         useRuntimeClasspathVersions()
     }
+}
+
+tasks.withType<JavaCompile> {
+    // TODO re-enable once protobuf generated code doesnt use deprecated methods (will need at least an upgrade to syntax proto3)
+    //      and enable fail on warnings
+    options.compilerArgs.add("-Xlint:deprecation")
+    options.compilerArgs.add("-Xlint:unchecked")
 }
 
 tasks.withType<Jar> {

@@ -26,7 +26,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
         super(RiakMessageCodes.MSG_TsDelReq,
               RiakMessageCodes.MSG_TsDelResp,
               builder.reqBuilder,
-              RiakTsPB.TsDelResp.PARSER);
+              RiakTsPB.TsDelResp.parser());
 
         this.builder = builder;
     }

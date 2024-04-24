@@ -24,7 +24,7 @@ public class ListKeysOperation extends PBFutureOperation<QueryResult, RiakTsPB.T
         super(RiakMessageCodes.MSG_TsListKeysReq,
               RiakMessageCodes.MSG_TsListKeysResp,
               builder.reqBuilder,
-              RiakTsPB.TsListKeysResp.PARSER);
+              RiakTsPB.TsListKeysResp.parser());
 
         this.builder = builder;
     }

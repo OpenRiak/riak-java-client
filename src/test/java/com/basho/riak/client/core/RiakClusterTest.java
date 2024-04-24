@@ -171,7 +171,7 @@ public class RiakClusterTest
         RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
         doReturn(node).when(nodeBuilder).build();
 
-        doReturn(false).when(nodeManager).executeOnNode(any(FutureOperation.class), isNull(RiakNode.class));
+        doReturn(false).when(nodeManager).executeOnNode(any(FutureOperation.class), isNull());
 
         // Build cluster, check our initial states
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build())
@@ -201,7 +201,7 @@ public class RiakClusterTest
         assertEquals("No Nodes Available, and Operation Queue at Max Depth", future3.cause().getMessage());
 
         // Come back from a full queue
-        doReturn(true).when(nodeManager).executeOnNode(any(FutureOperation.class), isNull(RiakNode.class));
+        doReturn(true).when(nodeManager).executeOnNode(any(FutureOperation.class), isNull());
 
         // Act like the Queue Drain Thread
         Whitebox.invokeMethod(cluster, "queueDrainOperation");

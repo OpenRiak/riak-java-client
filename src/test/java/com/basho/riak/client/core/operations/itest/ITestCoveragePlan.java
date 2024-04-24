@@ -4,7 +4,6 @@ import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.buckets.FetchBucketProperties;
 import com.basho.riak.client.api.commands.indexes.BinIndexQuery;
 import com.basho.riak.client.api.commands.indexes.BucketIndexQuery;
-import com.basho.riak.client.api.commands.indexes.RawIndexQuery;
 import com.basho.riak.client.api.commands.kv.CoveragePlan;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
@@ -14,7 +13,6 @@ import com.basho.riak.client.core.query.BucketProperties;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.HostAndPort;
 import org.junit.*;
-import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +20,11 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Sergey Galkin <sgalkin at basho dot com>
@@ -32,9 +32,6 @@ import static org.junit.Assert.*;
 public class ITestCoveragePlan extends ITestAutoCleanupBase
 {
     private final static Logger logger = LoggerFactory.getLogger(ITestCoveragePlan.class);
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     // TODO: Remove assumption as Riak KV with PEx and Coverage plan will be released
     @BeforeClass
@@ -249,9 +246,10 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
             .withUnavailableCoverageEntries(unavailableCoverageEntries)
             .build();
 
-        exception.expect(ExecutionException.class);
-        exception.expectMessage("com.basho.riak.client.core.netty.RiakResponseException: primary_partition_unavailable");
-
-        client.execute(cmdAlternativeFailing);
+        Assert.assertThrows(
+                "com.basho.riak.client.core.netty.RiakResponseException: primary_partition_unavailable",
+                ExecutionException.class,
+                () -> client.execute(cmdAlternativeFailing)
+        );
     }
 }

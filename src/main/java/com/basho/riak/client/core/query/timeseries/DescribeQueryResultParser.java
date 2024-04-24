@@ -90,7 +90,7 @@ class DescribeQueryResultParser
     private static Integer parseKeyCell(Cell keyCell)
     {
         final boolean isKeyMember = keyCell != null;
-        return isKeyMember ? new Long(keyCell.getLong()).intValue() : null;
+        return isKeyMember ? Long.valueOf(keyCell.getLong()).intValue() : null;
     }
 
     private static Quantum parseQuantumCells(List<Cell> cells)

@@ -30,7 +30,7 @@ public class DescribeTableOperation extends PBFutureOperation<TableDefinition, R
         super(RiakMessageCodes.MSG_TsQueryReq,
               RiakMessageCodes.MSG_TsQueryResp,
               RiakTsPB.TsQueryReq.newBuilder().setQuery(builder.interpolationBuilder),
-              RiakTsPB.TsQueryResp.PARSER);
+              RiakTsPB.TsQueryResp.parser());
 
         this.queryText = builder.queryText;
         this.tableName = builder.tableName;

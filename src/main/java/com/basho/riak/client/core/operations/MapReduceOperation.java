@@ -49,7 +49,7 @@ public class MapReduceOperation extends PBStreamingFutureOperation<MapReduceOper
         super(RiakMessageCodes.MSG_MapRedReq,
                 RiakMessageCodes.MSG_MapRedResp,
                 builder.reqBuilder,
-                RiakKvPB.RpbMapRedResp.PARSER,
+                RiakKvPB.RpbMapRedResp.parser(),
                 builder.streamResults);
         this.mapReduce = builder.mapReduce;
     }
