@@ -111,7 +111,7 @@ publishing {
 
             versionMapping {
                 usage(Usage.JAVA_API) {
-                    fromResolutionResult( )
+                    fromResolutionResult()
                 }
                 usage(Usage.JAVA_RUNTIME) {
                     fromResolutionResult()
