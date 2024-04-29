@@ -915,6 +915,10 @@ public class RiakNode implements RiakResponseListener
         consecutiveFailedOperations.incrementAndGet();
         if (inProgress != null)
         {
+            if (readTimeoutInMillis > 0)
+            {
+                channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
+            }
             returnConnection(channel); // release permit
             inProgress.setException(ex);
         }

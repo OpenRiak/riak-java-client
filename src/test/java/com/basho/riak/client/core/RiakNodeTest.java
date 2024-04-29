@@ -18,16 +18,20 @@ package com.basho.riak.client.core;
 import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.api.commands.ListenableFuture;
 import com.basho.riak.client.core.RiakNode.State;
+import com.basho.riak.client.core.netty.RiakResponseException;
+import com.basho.riak.client.core.util.Constants;
 import com.google.protobuf.Message;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.util.concurrent.BlockingOperationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
@@ -611,6 +615,121 @@ public class RiakNodeTest
         command.secondCommand.injectSetup(secondCmdSetup);
 
         startAndRunBlockingExceptionTest(command, setup.getChannel(), setup.getChannelFuture(), node, cluster);
+    }
+
+    @Test
+    public void nodeFailsOperation_readTimeoutSet() throws InterruptedException, UnknownHostException
+    {
+        Channel channel = mock(Channel.class);
+        ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
+        ChannelFuture future = mock(ChannelFuture.class);
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        Throwable t = mock(Throwable.class);
+        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
+        ReadTimeoutHandler timeoutHandler =  new ReadTimeoutHandler(1000, TimeUnit.MILLISECONDS);
+
+        doReturn(future).when(channel).closeFuture();
+        doReturn(true).when(channel).isOpen();
+        doReturn(channelPipeline).when(channel).pipeline();
+        doReturn(future).when(channel).writeAndFlush(operation);
+        doReturn(future).when(future).await();
+        doReturn(true).when(future).isSuccess();
+        doReturn(channel).when(future).channel();
+        doReturn(future).when(bootstrap).connect();
+        doReturn(bootstrap).when(bootstrap).clone();
+
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap)
+                .withReadTimeout(1000)
+                .build();
+        node.start();
+        boolean accepted = node.execute(operation);
+        assertTrue(accepted);
+        verify(channel).writeAndFlush(operation);
+        verify(operation).setLastNode(node);
+        verify(channelPipeline).addAfter(Mockito.eq(Constants.OPERATION_ENCODER), Mockito.eq(Constants.TIMEOUT_HANDLER),
+                Mockito.any(ReadTimeoutHandler.class));
+        Map<?, ?> inProgressMap = Whitebox.getInternalState(node, "inProgressMap");
+        assertEquals(1, inProgressMap.size());
+        node.onException(channel, t);
+        verify(channelPipeline).remove(Constants.TIMEOUT_HANDLER);
+        await().atMost(500, TimeUnit.MILLISECONDS)
+                .until(fieldIn(operation).ofType(Throwable.class), equalTo(t));
+    }
+
+    @Test
+    public void nodeRespondsWithError_readTimeoutSet() throws InterruptedException, UnknownHostException
+    {
+        Channel channel = mock(Channel.class);
+        ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
+        ChannelFuture future = mock(ChannelFuture.class);
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        RiakResponseException rre = mock(RiakResponseException.class);
+        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
+        ReadTimeoutHandler timeoutHandler =  new ReadTimeoutHandler(1000, TimeUnit.MILLISECONDS);
+
+        doReturn(future).when(channel).closeFuture();
+        doReturn(true).when(channel).isOpen();
+        doReturn(channelPipeline).when(channel).pipeline();
+        doReturn(future).when(channel).writeAndFlush(operation);
+        doReturn(future).when(future).await();
+        doReturn(true).when(future).isSuccess();
+        doReturn(channel).when(future).channel();
+        doReturn(future).when(bootstrap).connect();
+        doReturn(bootstrap).when(bootstrap).clone();
+
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap)
+                .withReadTimeout(1000)
+                .build();
+        node.start();
+        boolean accepted = node.execute(operation);
+        assertTrue(accepted);
+        verify(channel).writeAndFlush(operation);
+        verify(operation).setLastNode(node);
+        verify(channelPipeline).addAfter(Mockito.eq(Constants.OPERATION_ENCODER), Mockito.eq(Constants.TIMEOUT_HANDLER),
+                Mockito.any(ReadTimeoutHandler.class));
+        Map<?, ?> inProgressMap = Whitebox.getInternalState(node, "inProgressMap");
+        assertEquals(1, inProgressMap.size());
+        node.onRiakErrorResponse(channel, rre);
+        verify(channelPipeline).remove(Constants.TIMEOUT_HANDLER);
+        await().atMost(500, TimeUnit.MILLISECONDS)
+                .until(fieldIn(operation).ofType(Throwable.class), equalTo(rre));
+    }
+
+    @Test
+    public void operationSuccessful_readTimeoutSet() throws InterruptedException, UnknownHostException
+    {
+        Channel channel = mock(Channel.class);
+        ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
+        ChannelFuture future = mock(ChannelFuture.class);
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        RiakMessage rm = mock(RiakMessage.class);
+        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
+        ReadTimeoutHandler timeoutHandler =  new ReadTimeoutHandler(1000, TimeUnit.MILLISECONDS);
+
+        doReturn(future).when(channel).closeFuture();
+        doReturn(true).when(channel).isOpen();
+        doReturn(channelPipeline).when(channel).pipeline();
+        doReturn(future).when(channel).writeAndFlush(operation);
+        doReturn(future).when(future).await();
+        doReturn(true).when(future).isSuccess();
+        doReturn(channel).when(future).channel();
+        doReturn(future).when(bootstrap).connect();
+        doReturn(bootstrap).when(bootstrap).clone();
+
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap)
+                .withReadTimeout(1000)
+                .build();
+        node.start();
+        boolean accepted = node.execute(operation);
+        assertTrue(accepted);
+        verify(channel).writeAndFlush(operation);
+        verify(operation).setLastNode(node);
+        verify(channelPipeline).addAfter(Mockito.eq(Constants.OPERATION_ENCODER), Mockito.eq(Constants.TIMEOUT_HANDLER),
+                Mockito.any(ReadTimeoutHandler.class));
+        Map<?, ?> inProgressMap = Whitebox.getInternalState(node, "inProgressMap");
+        assertEquals(1, inProgressMap.size());
+        node.onSuccess(channel, rm);
+        verify(channelPipeline).remove(Constants.TIMEOUT_HANDLER);
     }
 
     private void startAndRunBlockingExceptionTest(CompoundCommand compoundCommand,
