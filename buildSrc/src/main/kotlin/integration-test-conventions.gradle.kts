@@ -22,7 +22,7 @@ plugins {
  */
 
 val baseImage = "workday-riak-centos9"
-val riakImage = "dssst/$baseImage:3.2.34-centos9"
+val riakImage = "docker-dev-artifactory.internal.invalid/dssst/$baseImage:3.2.34-centos9"
 
 /**
  * --------------------------------
