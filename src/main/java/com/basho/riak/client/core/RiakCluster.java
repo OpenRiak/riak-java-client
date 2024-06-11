@@ -336,8 +336,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
     private boolean execute(FutureOperation operation, RiakNode previousNode)
     {
-
-        System.out.println("RiakCluster: Execting on node");
+        logger.debug("RiakCluster: Executing operation {} on node: {}", System.identityHashCode(operation), previousNode.toString());
         return nodeManager.executeOnNode(operation, previousNode);
     }
 

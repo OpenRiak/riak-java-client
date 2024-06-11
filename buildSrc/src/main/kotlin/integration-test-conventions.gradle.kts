@@ -3,7 +3,6 @@ import com.bmuschko.gradle.docker.tasks.container.DockerExecContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
 import com.bmuschko.gradle.docker.tasks.image.DockerPullImage
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 
 /**
@@ -23,23 +22,22 @@ plugins {
  */
 
 val baseImage = "workday-riak-centos9"
-val riakImage = "$baseImage:3.2.34-centos9"
+val riakImage = "dssst/$baseImage:3.2.34-centos9"
 
 /**
  * --------------------------------
  *          Docker Setup
  * --------------------------------
  */
- 
-//val pullImage by tasks.creating(DockerPullImage::class) {
-//    image.set(riakImage)
-//}
+val pullImage by tasks.creating(DockerPullImage::class) {
+    image.set(riakImage)
+}
 
 val createContainer by tasks.creating(DockerCreateContainer::class) {
-    //dependsOn(pullImage)
+    dependsOn(pullImage)
 
     containerName.set(baseImage)
-    targetImageId("30de46514b1f")
+    targetImageId(pullImage.image)
 
     hostConfig.portBindings.set(listOf("8087:8087", "8098:8098"))
     hostConfig.autoRemove.set(true)
@@ -55,16 +53,21 @@ val waitForRiak by tasks.creating(DockerExecContainer::class) {
     dependsOn(startContainer)
 
     targetContainerId(startContainer.containerId)
-    commands.set(listOf(
-            arrayOf("riak", "ping")
-    ))
+    commands.set(listOf(arrayOf("riak", "ping")))
 }
 
 val configureRiak by tasks.creating(Exec::class) {
     dependsOn(waitForRiak)
 
     executable = "bash"
-    commandLine("./riak_tools/riak-cluster-config", "docker exec $baseImage riak admin", 8098, false, false, "riak_tools/bucket-types")
+    commandLine(
+        "./riak_tools/riak-cluster-config",
+        "docker exec $baseImage riak admin",
+        8098,
+        false,
+        false,
+        "riak_tools/bucket-types"
+    )
 }
 
 val stopContainer by tasks.creating(DockerStopContainer::class) {
@@ -83,7 +86,7 @@ val integrationTest = task<Test>("itest") {
 
     shouldRunAfter(tasks.test)
     dependsOn(configureRiak)
-    //finalizedBy(stopContainer)
+    finalizedBy(stopContainer)
 
     useJUnit()
 
@@ -97,8 +100,8 @@ val integrationTest = task<Test>("itest") {
     }
 
     val properties: Map<String, String> = mutableMapOf(
-            "com.basho.riak.yokozuna" to "false", // Not testing yokuzuna features
-            "com.basho.riak.timeseries" to (baseImage == "riak-ts").toString()
+        "com.basho.riak.yokozuna" to "false", // Not testing yokuzuna features
+        "com.basho.riak.timeseries" to (baseImage == "riak-ts").toString()
     )
     // Set test properties to use
     systemProperties(properties)
