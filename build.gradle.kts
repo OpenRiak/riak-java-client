@@ -16,6 +16,9 @@ plugins {
     `publishing-conventions`
     // For generating the java classes from the proto files
     id("com.google.protobuf")
+
+    //apply pr validator
+    id("pr-validator")
 }
 
 dependencies {
