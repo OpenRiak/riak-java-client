@@ -102,7 +102,8 @@ val integrationTest = task<Test>("itest") {
     val properties: Map<String, String> = mutableMapOf(
         "com.basho.riak.yokozuna" to "false", // Not testing yokuzuna features
         "com.basho.riak.timeseries" to (baseImage == "riak-ts").toString(),
-        "com.basho.riak.2i" to (baseImage == "riak-ts").toString() // backend must be 'leveldb' in riak config to us this
+        "com.basho.riak.2i" to (baseImage == "riak-ts").toString(), // backend must be 'leveldb' in riak config to us this
+        "com.basho.riak.mapreduce" to (baseImage == "riak-ts").toString()
     )
     // Set test properties to use
     systemProperties(properties)

@@ -27,6 +27,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -50,6 +51,8 @@ public class ITestMapReduceOperation extends ITestBase
     @BeforeClass
     public static void setup() throws ExecutionException, InterruptedException
     {
+        Assume.assumeTrue(testMapReduce);
+
         insertData(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString()));
 
         if (testBucketType)

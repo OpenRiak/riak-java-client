@@ -36,7 +36,7 @@ public class ITestClone extends ITestBase
         assertNotNull(fetchedBook);
         
 
-        Location cloneLocation = new Location(new Namespace("cloned-books"), "moby_dick_cloned");
+        Location cloneLocation = new Location(booksBucket, "moby_dick_cloned");
 
         CloneValue cloneBook = new CloneValue.Builder(bookLocations[0], cloneLocation).build();
 

@@ -52,6 +52,7 @@ public class ITestBucketKeyMapReduce extends ITestBase
     @BeforeClass
     public static void setup() throws InterruptedException, ExecutionException
     {
+        Assume.assumeTrue(testMapReduce);
         changeBucketProps();
         initValues(Namespace.DEFAULT_BUCKET_TYPE.toString());
         if (testBucketType)
