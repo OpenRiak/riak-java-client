@@ -41,7 +41,7 @@ public class ITestClone extends ITestBase
         assertNotNull(fetchedBook);
         assertEquals(fetchedBook.author, "Herman Melville");
 
-        Location cloneLocation = new Location(booksBucket, "moby_dick_cloned");
+        Location cloneLocation = new Location(new Namespace("clone-books"), "moby_dick");
         CloneValue cloneBook = new CloneValue.Builder(bookLocation, cloneLocation).build();
 
         CloneValue.Response cloneResp = client.execute(cloneBook);
