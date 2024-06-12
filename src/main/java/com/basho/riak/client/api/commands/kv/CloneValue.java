@@ -160,8 +160,6 @@ public final class CloneValue extends GenericRiakCommand.GenericRiakCommandWithS
         private final Map<Option<?>, Object> options = new HashMap<>();
         private final Location srcLocation;
         private final Location dstLocation;
-        private Namespace namespace;
-        private BinaryValue key;
 
         /**
          * Construct a Builder for a CloneValue command.
@@ -245,7 +243,7 @@ public final class CloneValue extends GenericRiakCommand.GenericRiakCommandWithS
     @Override
     public String toString()
     {
-        return String.format("{namespace: %s, key: %s, options: %s}", 
+        return String.format("{namespace: %s, key: %s, options: %s}",
                 srcLocation, dstLocation, options);
     }
 }

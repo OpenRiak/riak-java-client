@@ -166,9 +166,9 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
 
         public CloneOperation build()
         {
-            reqBuilder.setGetQuorum(getOptionBuilder);
-            reqBuilder.setPutQuorum(putOptionBuilder);
-            reqBuilder.setDelQuorum(delOptionBuilder);
+            reqBuilder.setGetQuorum(getOptionBuilder.build());
+            reqBuilder.setPutQuorum(putOptionBuilder.build());
+            reqBuilder.setDelQuorum(delOptionBuilder.build());
             return new CloneOperation(this);
         }
 
