@@ -52,7 +52,24 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
     protected RiakKvPB.RpbCloneResp decode(RiakMessage message)
     {
         Operations.checkPBMessageType(message, RiakMessageCodes.MSG_CloneResp);
-        return null;
+        System.out.println("Decoding message: " + message);
+        try
+        {
+            byte[] data = message.getData();
+
+            if (data.length == 0) // not found (TODO is this true? how does clone work if source not found?)
+            {
+                return null;
+            }
+
+            // It's an empty message though...
+            return RiakKvPB.RpbCloneResp.parseFrom(data);
+        }
+        catch (InvalidProtocolBufferException e)
+        {
+            logger.error("Invalid message received", e);
+            throw new IllegalArgumentException("Invalid message received", e);
+        }
     }
 
     @Override
@@ -70,8 +87,7 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
 
     static CloneOperation.Response convert(RiakKvPB.RpbCloneResp response)
     {
-        CloneOperation.Response.Builder responseBuilder =
-                new CloneOperation.Response.Builder();
+        CloneOperation.Response.Builder responseBuilder = new CloneOperation.Response.Builder();
 
         // If the response is null ... it means not found. Riak only sends
         // a message code and zero bytes when that's the case. (See: decode() )
@@ -88,6 +104,7 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
     protected RiakMessage createChannelMessage()
     {
         RiakKvPB.RpbCloneReq req = reqBuilder.build();
+        System.out.println("createChannelMessage Clone Request: " + req.toString());
         return new RiakMessage(RiakMessageCodes.MSG_CloneReq, req.toByteArray());
     }
 
@@ -99,8 +116,7 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
 
     public static class Builder extends AllQuorumOptionsBuilder<Builder>
     {
-        private final RiakKvPB.RpbCloneReq.Builder reqBuilder =
-            RiakKvPB.RpbCloneReq.newBuilder();
+        private final RiakKvPB.RpbCloneReq.Builder reqBuilder = RiakKvPB.RpbCloneReq.newBuilder();
         private final Location srcLocation;
         private final Location dstLocation;
 
@@ -169,6 +185,7 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
             reqBuilder.setGetQuorum(getOptionBuilder.build());
             reqBuilder.setPutQuorum(putOptionBuilder.build());
             reqBuilder.setDelQuorum(delOptionBuilder.build());
+            System.out.println("build Clone Request: {}" + reqBuilder.toString() + " " + srcLocation + " " + dstLocation);
             return new CloneOperation(this);
         }
 

@@ -1,6 +1,8 @@
 package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.annotations.RiakVClock;
+import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.api.commands.kv.CloneValue;
 import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.api.commands.kv.StoreValue;
@@ -8,6 +10,8 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.RiakObject;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.junit.Test;
 import com.basho.riak.client.core.operations.CloneOperation;
 
@@ -28,36 +32,36 @@ public class ITestClone extends ITestBase
     public void testCopySucceeds() throws ExecutionException, InterruptedException
     {
         // Insert Data
-        Location[] bookLocations = insertBookData(client);
+        Location bookLocation = insertBookData(client);
 
         // Verify Data was inserted
-        FetchValue fetchMobyDickOp = new FetchValue.Builder(bookLocations[0]).build();
+        FetchValue fetchMobyDickOp = new FetchValue.Builder(bookLocation).build();
         Book fetchedBook = client.execute(fetchMobyDickOp).getValue(Book.class);
+        System.out.println("Fetched book: " + fetchedBook);
         assertNotNull(fetchedBook);
-        
 
         Location cloneLocation = new Location(booksBucket, "moby_dick_cloned");
-
-        CloneValue cloneBook = new CloneValue.Builder(bookLocations[0], cloneLocation).build();
+        CloneValue cloneBook = new CloneValue.Builder(bookLocation, cloneLocation).build();
 
         CloneValue.Response cloneResp = client.execute(cloneBook);
+        System.out.println("Clone resp: " + cloneResp);
 
         // Verify data was cloned
         FetchValue fetchClone = new FetchValue.Builder(cloneLocation).build();
-        fetchedBook = client.execute(fetchClone).getValue(Book.class);
-        assertNotNull(fetchedBook);
+        FetchValue.Response afterCloneFetch = client.execute(fetchClone);
+        System.out.println("After clone fetch: " + afterCloneFetch);
+        System.out.println("After clone fetch value: " + afterCloneFetch.getValue(RiakObject.class).getValue().toString());
+        assertNotNull(afterCloneFetch.getValue(RiakObject.class));
 
         // Verify original still exists
         fetchedBook = client.execute(fetchMobyDickOp).getValue(Book.class);
         assertNotNull(fetchedBook);
     }
 
-    private Location[] insertBookData(RiakClient client)
+    private Location insertBookData(RiakClient client)
             throws ExecutionException, InterruptedException
     {
-        Location[] bookLocations = new Location[] {
-                new Location(booksBucket, "moby_dick"),
-        };
+        Location bookLocation = new Location(booksBucket, "moby_dick");
 
         Book mobyDick = new Book();
         mobyDick.title = "Moby Dick";
@@ -66,18 +70,25 @@ public class ITestClone extends ITestBase
         mobyDick.isbn = "1111979723";
         mobyDick.copiesOwned = 3;
 
-        StoreValue storeBookOp = new StoreValue.Builder(mobyDick).withLocation(bookLocations[0]).build();
+        StoreValue storeBookOp = new StoreValue.Builder(mobyDick).withLocation(bookLocation).build();
         client.execute(storeBookOp);
 
-        return bookLocations;
+        return bookLocation;
     }
 
     public static class Book
     {
+        @RiakVClock
+        VClock vclock;
+        @JsonProperty
         public String title;
+        @JsonProperty
         public String author;
+        @JsonProperty
         public String body;
+        @JsonProperty
         public String isbn;
+        @JsonProperty
         public Integer copiesOwned;
     }
 }
