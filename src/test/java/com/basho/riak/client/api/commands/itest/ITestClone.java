@@ -20,8 +20,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertNull;
+import static junit.framework.TestCase.*;
 
 public class ITestClone extends ITestBase
 {
@@ -36,9 +35,11 @@ public class ITestClone extends ITestBase
 
         // Verify Data was inserted
         FetchValue fetchMobyDickOp = new FetchValue.Builder(bookLocation).build();
-        Book fetchedBook = client.execute(fetchMobyDickOp).getValue(Book.class);
-        System.out.println("Fetched book: " + fetchedBook);
+        FetchValue.Response beforeCloneFetch = client.execute(fetchMobyDickOp);
+        System.out.println("Before Clone Fetched: " + beforeCloneFetch);
+        Book fetchedBook = beforeCloneFetch.getValue(Book.class);
         assertNotNull(fetchedBook);
+        assertEquals(fetchedBook.author, "Herman Melville");
 
         Location cloneLocation = new Location(booksBucket, "moby_dick_cloned");
         CloneValue cloneBook = new CloneValue.Builder(bookLocation, cloneLocation).build();
@@ -50,7 +51,6 @@ public class ITestClone extends ITestBase
         FetchValue fetchClone = new FetchValue.Builder(cloneLocation).build();
         FetchValue.Response afterCloneFetch = client.execute(fetchClone);
         System.out.println("After clone fetch: " + afterCloneFetch);
-        System.out.println("After clone fetch value: " + afterCloneFetch.getValue(RiakObject.class).getValue().toString());
         assertNotNull(afterCloneFetch.getValue(RiakObject.class));
 
         // Verify original still exists

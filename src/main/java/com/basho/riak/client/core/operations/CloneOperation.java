@@ -25,6 +25,8 @@ import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -52,7 +54,7 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
     protected RiakKvPB.RpbCloneResp decode(RiakMessage message)
     {
         Operations.checkPBMessageType(message, RiakMessageCodes.MSG_CloneResp);
-        System.out.println("Decoding message: " + message);
+        System.out.println("Decoding message: " + message + " " + Arrays.toString(message.getData()));
         try
         {
             byte[] data = message.getData();
@@ -185,7 +187,6 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
             reqBuilder.setGetQuorum(getOptionBuilder.build());
             reqBuilder.setPutQuorum(putOptionBuilder.build());
             reqBuilder.setDelQuorum(delOptionBuilder.build());
-            System.out.println("build Clone Request: {}" + reqBuilder.toString() + " " + srcLocation + " " + dstLocation);
             return new CloneOperation(this);
         }
 
