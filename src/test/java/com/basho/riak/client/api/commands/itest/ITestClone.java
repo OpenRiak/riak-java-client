@@ -42,20 +42,23 @@ public class ITestClone extends ITestBase
         assertEquals(fetchedBook.author, "Herman Melville");
 
         Location cloneLocation = new Location(booksBucket, "moby_dick_cloned");
-        CloneValue cloneBook = new CloneValue.Builder(cloneLocation, bookLocation).build();
+        CloneValue cloneBook = new CloneValue.Builder(bookLocation, cloneLocation).build();
 
         CloneValue.Response cloneResp = client.execute(cloneBook);
         System.out.println("Clone resp: " + cloneResp);
 
+        // Verify original still exists
+        FetchValue.Response afterCloneFetch = client.execute(new FetchValue.Builder(bookLocation).build());
+        System.out.println("After clone fetch src: " + afterCloneFetch);
+        fetchedBook = afterCloneFetch.getValue(Book.class);
+        assertNotNull(fetchedBook);
+
         // Verify data was cloned
         FetchValue fetchClone = new FetchValue.Builder(cloneLocation).build();
-        FetchValue.Response afterCloneFetch = client.execute(fetchClone);
-        System.out.println("After clone fetch: " + afterCloneFetch);
-        assertNotNull(afterCloneFetch.getValue(RiakObject.class));
+        FetchValue.Response cloneFetchRes = client.execute(fetchClone);
+        System.out.println("After clone fetch dest: " + cloneFetchRes);
+        assertNotNull(cloneFetchRes.getValue(RiakObject.class));
 
-        // Verify original still exists
-        fetchedBook = client.execute(fetchMobyDickOp).getValue(Book.class);
-        assertNotNull(fetchedBook);
     }
 
     private Location insertBookData(RiakClient client)
