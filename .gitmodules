@@ -1,7 +1,7 @@
 [submodule "riak_tools"]
 	path = riak_tools
 	url = ssh://git@bitbucket.internal.invalid:7999/scm/dssst/riak-client-tools.git
-	branch = master
+	branch = RIAK-1959
 [submodule "riak_pb"]
 	path = riak_pb
 	url = ssh://git@bitbucket.internal.invalid:7999/dssst/riak_pb.git
