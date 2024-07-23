@@ -16,35 +16,24 @@
 package com.basho.riak.client.api.commands.kv;
 
 import com.basho.riak.client.api.GenericRiakCommand;
-import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.cap.VClock;
-import com.basho.riak.client.api.convert.Converter;
-import com.basho.riak.client.api.convert.Converter.OrmExtracted;
-import com.basho.riak.client.api.convert.ConverterFactory;
+import com.basho.riak.client.api.commands.RiakOption;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.operations.CloneOperation;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.api.commands.RiakOption;
-import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.client.core.operations.CloneOperation;
+import com.basho.riak.client.core.query.Location;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.basho.riak.client.core.query.Location;
-import com.basho.riak.client.core.query.Namespace;
-import com.fasterxml.jackson.core.type.TypeReference;
-
 public final class CloneValue extends GenericRiakCommand.GenericRiakCommandWithSameInfo<CloneValue.Response,
-        Location, CloneOperation.Response>
-{
+        Location, CloneOperation.Response> {
     private final Map<Option<?>, Object> options = new HashMap<>();
     private final Location srcLocation;
     private final Location dstLocation;
 
-    CloneValue(Builder builder)
-    {
+    CloneValue(Builder builder) {
         this.options.putAll(builder.options);
         this.srcLocation = builder.srcLocation;
         this.dstLocation = builder.dstLocation;
@@ -53,25 +42,21 @@ public final class CloneValue extends GenericRiakCommand.GenericRiakCommandWithS
 
     @Override
     protected Response convertResponse(FutureOperation<CloneOperation.Response, ?, Location> request,
-                                       CloneOperation.Response coreResponse)
-    {
+                                       CloneOperation.Response coreResponse) {
         return new Response.Builder()
                 .build();
     }
 
     @Override
-    protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
-    {
+    protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster) {
         return super.executeAsync(cluster);
     }
 
     @Override
-    protected CloneOperation buildCoreOperation()
-    {
+    protected CloneOperation buildCoreOperation() {
         CloneOperation.Builder builder = new CloneOperation.Builder(srcLocation, dstLocation);
 
-        for (Map.Entry<Option<?>, Object> opPair : options.entrySet())
-        {
+        for (Map.Entry<Option<?>, Object> opPair : options.entrySet()) {
             RiakOption<?> option = opPair.getKey();
 
             /*
@@ -88,12 +73,9 @@ public final class CloneValue extends GenericRiakCommand.GenericRiakCommandWithS
                 builder.withDelQuorumOptions((RiakKvPB.RpbDelQuorumOpts) opPair.getValue());
             }
             */
-            if (option == Option.DeleteSrc)
-            {
+            if (option == Option.DeleteSrc) {
                 builder.withDeleteSrc((Boolean) opPair.getValue());
-            }
-            else if (option == Option.SrcVClock)
-            {
+            } else if (option == Option.SrcVClock) {
                 builder.withSrcVClock((VClock) opPair.getValue());
             }
 
@@ -103,71 +85,59 @@ public final class CloneValue extends GenericRiakCommand.GenericRiakCommandWithS
     }
 
     /**
-    * Options For controlling how Riak performs the clone operation.
-    * <p>
-    * These options can be supplied to the {@link CloneValue.Builder} to change
-    * how Riak performs the operation. These override the defaults provided
-    * by the bucket.
-    * </p>
-    * @since 2.0
-    * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/cap-controls/">Replication Properties</a>
-    */
-   public final static class Option<T> extends RiakOption<T>
-   {
-       public static final Option<RiakKvPB.RpbGetQuorumOpts> GetQuorumOptions = new Option<>("GET_QUORUM_OPTIONS");
-       public static final Option<RiakKvPB.RpbPutQuorumOpts> PutQuorumOptions = new Option<>("PUT_QUORUM_OPTIONS");
-       public static final Option<RiakKvPB.RpbDelQuorumOpts> DelQuorumOptions = new Option<>("DEL_QUORUM_OPTIONS");
+     * Options For controlling how Riak performs the clone operation.
+     * <p>
+     * These options can be supplied to the {@link CloneValue.Builder} to change
+     * how Riak performs the operation. These override the defaults provided
+     * by the bucket.
+     * </p>
+     *
+     * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/cap-controls/">Replication Properties</a>
+     * @since 2.0
+     */
+    public final static class Option<T> extends RiakOption<T> {
+        public static final Option<Boolean> DeleteSrc = new Option<>("DELETE_SRC");
+        public static final Option<VClock> SrcVClock = new Option<>("SRC_VCLOCK");
 
-       public static final Option<Boolean> DeleteSrc = new Option<>("DELETE_SRC");
-       public static final Option<VClock> SrcVClock = new Option<>("SRC_VCLOCK");
+        private Option(String name) {
+            super(name);
+        }
+    }
 
-       private Option(String name)
-       {
-           super(name);
-       }
-   }
-
-    public static class Response extends KvResponseBase
-    {
-        Response(Init<?> builder)
-        {
+    public static class Response extends KvResponseBase {
+        Response(Init<?> builder) {
             super(builder);
         }
 
-        static class Builder extends Init<Builder>
-        {
+        static class Builder extends Init<Builder> {
             @Override
-            protected Builder self()
-            {
+            protected Builder self() {
                 return this;
             }
 
             @Override
-            Response build()
-            {
+            Response build() {
                 return new Response(this);
             }
         }
     }
 
 
-
     /**
      * Used to construct a CloneValue command.
      */
-    public static class Builder
-    {
+    public static class Builder {
         private final Map<Option<?>, Object> options = new HashMap<>();
         private final Location srcLocation;
         private final Location dstLocation;
 
         /**
          * Construct a Builder for a CloneValue command.
+         *
          * @param src
          * @param dst
          */
-        public Builder(Location src, Location dst)
-        {
+        public Builder(Location src, Location dst) {
             this.srcLocation = src;
             this.dstLocation = dst;
         }
@@ -178,28 +148,26 @@ public final class CloneValue extends GenericRiakCommand.GenericRiakCommandWithS
          * to behave when servicing the request.
          *
          * @param option the option
-         * @param value the value for the option
+         * @param value  the value for the option
          * @return a reference to this object.
          */
-        public <T> Builder withOption(Option<T> option, T value)
-        {
+        public <T> Builder withOption(Option<T> option, T value) {
             options.put(option, value);
             return this;
         }
 
         /**
          * Construct the CloneValue command.
+         *
          * @return the new CloneValue command.
          */
-        public CloneValue build()
-        {
+        public CloneValue build() {
             return new CloneValue(this);
         }
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + (srcLocation != null ? srcLocation.hashCode() : 0);
@@ -209,40 +177,32 @@ public final class CloneValue extends GenericRiakCommand.GenericRiakCommandWithS
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (obj == null)
-        {
+        if (obj == null) {
             return false;
         }
-        if (!(obj instanceof CloneValue))
-        {
+        if (!(obj instanceof CloneValue)) {
             return false;
         }
 
         final CloneValue other = (CloneValue) obj;
-        if (this.srcLocation != other.srcLocation && (this.srcLocation == null || !this.srcLocation.equals(other.srcLocation)))
-        {
+        if (this.srcLocation != other.srcLocation && (this.srcLocation == null || !this.srcLocation.equals(other.srcLocation))) {
             return false;
         }
-        if (this.dstLocation != other.dstLocation && (this.dstLocation == null || !this.dstLocation.equals(other.dstLocation)))
-        {
+        if (this.dstLocation != other.dstLocation && (this.dstLocation == null || !this.dstLocation.equals(other.dstLocation))) {
             return false;
         }
-        if (this.options != other.options && (this.options == null || !this.options.equals(other.options)))
-        {
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
             return false;
         }
         return true;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return String.format("{namespace: %s, key: %s, options: %s}",
                 srcLocation, dstLocation, options);
     }

@@ -16,7 +16,6 @@
 package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.api.cap.VClock;
-import com.basho.riak.client.core.AllQuorumOptionsBuilder;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.query.Location;
@@ -116,7 +115,7 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
         return srcLocation;
     }
 
-    public static class Builder extends AllQuorumOptionsBuilder<Builder>
+    public static class Builder
     {
         private final RiakKvPB.RpbCloneReq.Builder reqBuilder = RiakKvPB.RpbCloneReq.newBuilder();
         private final Location srcLocation;
@@ -184,9 +183,6 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
 
         public CloneOperation build()
         {
-            reqBuilder.setGetQuorum(getOptionBuilder.build());
-            reqBuilder.setPutQuorum(putOptionBuilder.build());
-            reqBuilder.setDelQuorum(delOptionBuilder.build());
             return new CloneOperation(this);
         }
 
