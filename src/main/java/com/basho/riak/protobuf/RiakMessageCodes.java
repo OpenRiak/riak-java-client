@@ -40,11 +40,8 @@ public final class RiakMessageCodes {
 	public static final byte MSG_SetBucketTypeReq = 32;
 	public static final byte MSG_GetBucketKeyPreflistReq = 33;
 	public static final byte MSG_GetBucketKeyPreflistResp = 34;
-	public static final byte MSG_GetQuorumOpts = 35;
-	public static final byte MSG_PutQuorumOpts = 36;
-	public static final byte MSG_DelQuorumOpts = 37;
-	public static final byte MSG_CloneReq = 38;
-	public static final byte MSG_CloneResp = 39;
+	public static final byte MSG_CloneReq = 35;
+	public static final byte MSG_CloneResp = 36;
 	public static final byte MSG_CSBucketReq = 40;
 	public static final byte MSG_CSBucketResp = 41;
 	public static final byte MSG_IndexBodyResp = 42;

@@ -35,7 +35,8 @@ import java.util.concurrent.TimeoutException;
  * <li>{@link com.basho.riak.client.api.commands.kv.StoreValue}</li>
  * <li>{@link com.basho.riak.client.api.commands.kv.UpdateValue}</li>
  * <li>{@link com.basho.riak.client.api.commands.kv.DeleteValue}</li>
- * <li>{@link com.basho.riak.client.api.commands.kv.CloneValue}</li>
+ * <li>{@link com.basho.riak.client.api.commands.kv.CopyValue}</li>
+ * <li>{@link com.basho.riak.client.api.commands.kv.MoveValue}</li>
  * </ul>
  * <h4>Listing keys in a namespace</h4>
  * <ul><li>{@link com.basho.riak.client.api.commands.kv.ListKeys}</li></ul>

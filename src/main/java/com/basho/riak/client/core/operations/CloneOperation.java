@@ -15,108 +15,172 @@
  */
 package com.basho.riak.client.core.operations;
 
+import com.basho.riak.client.api.cap.BasicVClock;
 import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.converters.RiakObjectConverter;
+import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakPB;
+import com.ericsson.otp.erlang.OtpErlangDecodeException;
+import com.ericsson.otp.erlang.OtpErlangObject;
+import com.ericsson.otp.erlang.OtpExternal;
+import com.ericsson.otp.erlang.OtpInputStream;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * An operation used to clone an object in Riak.
  */
-public class CloneOperation extends FutureOperation<CloneOperation.Response, RiakKvPB.RpbCloneResp, Location>
-{
+public class CloneOperation extends FutureOperation<CloneOperation.Response, RiakKvPB.RpbCloneResp, Location> {
+
     private final RiakKvPB.RpbCloneReq.Builder reqBuilder;
     private final Location srcLocation;
-    private final Location dstLocation;
 
     private final Logger logger = LoggerFactory.getLogger(CloneOperation.class);
 
-    private CloneOperation(Builder builder)
-    {
+    private CloneOperation(Builder builder) {
         this.reqBuilder = builder.reqBuilder;
         this.srcLocation = builder.srcLocation;
-        this.dstLocation = builder.dstLocation;
     }
 
     @Override
-    protected RiakKvPB.RpbCloneResp decode(RiakMessage message)
-    {
+    protected RiakKvPB.RpbCloneResp decode(RiakMessage message) {
         Operations.checkPBMessageType(message, RiakMessageCodes.MSG_CloneResp);
-        System.out.println("Decoding message: " + message + " " + Arrays.toString(message.getData()));
-        try
-        {
+
+        try {
             byte[] data = message.getData();
 
             if (data.length == 0) // not found (TODO is this true? how does clone work if source not found?)
             {
                 return null;
             }
-
-            // It's an empty message though...
             return RiakKvPB.RpbCloneResp.parseFrom(data);
-        }
-        catch (InvalidProtocolBufferException e)
-        {
+
+        } catch (InvalidProtocolBufferException e) {
             logger.error("Invalid message received", e);
             throw new IllegalArgumentException("Invalid message received", e);
         }
     }
 
     @Override
-    protected CloneOperation.Response convert(List<RiakKvPB.RpbCloneResp> responses)
-    {
+    protected CloneOperation.Response convert(List<RiakKvPB.RpbCloneResp> responses) {
         // This is not a streaming op, there will only be one response
-        if (responses.size() > 1)
-        {
+        if (responses.size() > 1) {
             logger.error("Received {} responses when only one was expected.", responses.size());
         }
 
         final RiakKvPB.RpbCloneResp response = responses.get(0);
+
         return convert(response);
     }
 
-    static CloneOperation.Response convert(RiakKvPB.RpbCloneResp response)
-    {
+    private CloneOperation.Response convert(RiakKvPB.RpbCloneResp response) {
         CloneOperation.Response.Builder responseBuilder = new CloneOperation.Response.Builder();
 
         // If the response is null ... it means not found. Riak only sends
         // a message code and zero bytes when that's the case. (See: decode() )
         // Because that makes sense!
-        if (null == response)
-        {
+        if (null == response) {
             responseBuilder.withNotFound(true);
+        } else {
+            // This only exists if no key was specified in the put request
+            if (response.hasKey()) {
+                responseBuilder.withGeneratedKey(BinaryValue.unsafeCreate(response.getKey().toByteArray()));
+            }
+
+            // Only exists if the request has delete_src=true
+            if (response.hasDelFail()) {
+                try {
+                    OtpInputStream is = new OtpInputStream(response.getDelFail().toByteArray());
+
+                    //When present, the del_error fields will be an ETF-encoded term. Likely values:
+                    // - atom
+                    // - tuple(atom, integer)
+                    // - tuple(atom, integer, integer)
+
+                    int firstByte = is.read1skip_version();
+                    is.reset();
+
+                    if (firstByte == OtpExternal.smallTupleTag || firstByte == OtpExternal.largeTupleTag) {
+                        int arity = is.read_tuple_head();
+                        String atom = is.read_atom();
+                        int code = 0;
+                        if (arity > 1) {
+                            code = is.read_int();
+                        }
+                        responseBuilder.withDelFail(new RiakResponseException(code, atom));
+                    } else if (firstByte == OtpExternal.atomTag) {
+                        String atom = is.read_atom();
+                        responseBuilder.withDelFail(new RiakResponseException(0, atom));
+                    } else {
+                        // Don't know try and decode it and use it
+                        String msg = OtpErlangObject.decode(is).toString();
+                        responseBuilder.withDelFail(new RiakResponseException(0, msg));
+                    }
+                } catch (OtpErlangDecodeException e) {
+                    logger.error("DelFail was present in RpbCloneResp but could not parse it", e);
+                    responseBuilder.withDelFail(new RiakResponseException(0, "DelFail was present in RpbCloneResp but could not parse it"));
+                }
+            }
+
+            // Only exists if the request had details requested
+            List<RiakPB.RpbPair> details = response.getDetailsList();
+            if (!details.isEmpty()) {
+                // details, when requested, is a list of {key = atom, value = ETF-encoded} pairs, where values are likely:
+                // - integer (microseconds)
+                // - list(tuple(atom, integer))
+                // - maybe (not sure) (b) values could be a deep (nested) list of (b)
+                // For now opting to return the keys and values as strings, unsure how we want to expose this yet
+                Map<String, String> parsed = details.stream().collect(Collectors.toMap(
+                        pair -> pair.getKey().toStringUtf8(),
+                        pair -> pair.getValue().toStringUtf8()
+                ));
+                responseBuilder.withDetails(parsed);
+            }
+
+            // Note RiakMessageCodec and RiakMessage has a handling for `response.getError()`
+            // its treated as an error and listeners should already be invoked, aka should not reach here if had the error
+            // field set
+
+            // To unify the behavior of having just a tombstone vs. siblings
+            // that include a tombstone, we create an empty object and mark
+            // it deleted
+            if (response.getContentCount() == 0) {
+                RiakObject ro = new RiakObject().setDeleted(true).setVClock(new BasicVClock(response.getVclock().toByteArray()));
+
+                responseBuilder.addObject(ro);
+            } else {
+                responseBuilder.addObjects(RiakObjectConverter.convert(response.getContentList(), response.getVclock()));
+            }
         }
 
         return responseBuilder.build();
     }
 
     @Override
-    protected RiakMessage createChannelMessage()
-    {
+    protected RiakMessage createChannelMessage() {
         RiakKvPB.RpbCloneReq req = reqBuilder.build();
-        System.out.println("createChannelMessage Clone Request: " + req.toString());
         return new RiakMessage(RiakMessageCodes.MSG_CloneReq, req.toByteArray());
     }
 
     @Override
-    public Location getQueryInfo()
-    {
+    public Location getQueryInfo() {
         return srcLocation;
     }
 
-    public static class Builder
-    {
+    public static class Builder {
         private final RiakKvPB.RpbCloneReq.Builder reqBuilder = RiakKvPB.RpbCloneReq.newBuilder();
         private final Location srcLocation;
         private final Location dstLocation;
@@ -124,18 +188,16 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
         /**
          * Construct a CloneOperation that will retrieve an object from Riak stored
          * at the provided Location.
+         *
          * @param srcLocation the location of the object to clone
          * @param dstLocation the location of where to clone the object
          */
-        public Builder(Location srcLocation, Location dstLocation)
-        {
-            if (srcLocation == null)
-            {
+        public Builder(Location srcLocation, Location dstLocation) {
+            if (srcLocation == null) {
                 throw new IllegalArgumentException("srcLocation can not be null.");
             }
 
-            if (dstLocation == null)
-            {
+            if (dstLocation == null) {
                 throw new IllegalArgumentException("dstLocation can not be null.");
             }
 
@@ -158,109 +220,224 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
          * @param deleteSrc boolean
          * @return a reference to this object.
          */
-        public Builder withDeleteSrc(boolean deleteSrc)
-        {
+        public Builder withDeleteSrc(boolean deleteSrc) {
             reqBuilder.setDeleteSrc(deleteSrc);
             return this;
         }
 
-        /**
-         * Set the src vclock
-         *
-         * @param vclock
-         * @return a reference to this object.
-         */
-        public Builder withSrcVClock(VClock vClock)
-        {
+
+        public Builder withSrcVClock(VClock vClock) {
             reqBuilder.setSrcVclock(ByteString.copyFrom(vClock.getBytes()));
             return this;
         }
 
-        public Builder self()
-        {
+        public Builder withDstProvMeta(ProvenanceMetadata provMeta) {
+            reqBuilder.setDstProvMeta(ByteString.copyFromUtf8(provMeta.toString()));
             return this;
         }
 
-        public CloneOperation build()
-        {
+        public Builder withReturnBody(boolean returnBody) {
+            reqBuilder.setReturnBody(returnBody);
+            return this;
+        }
+
+        public Builder withR(int r) {
+            reqBuilder.setR(r);
+            return this;
+        }
+
+        public Builder withPR(int pr) {
+            reqBuilder.setPr(pr);
+            return this;
+        }
+
+        public Builder withW(int w) {
+            reqBuilder.setW(w);
+            return this;
+        }
+
+        public Builder withPW(int pw) {
+            reqBuilder.setPw(pw);
+            return this;
+        }
+
+        public Builder withDW(int dw) {
+            reqBuilder.setDw(dw);
+            return this;
+        }
+
+        public Builder withRW(int rw) {
+            reqBuilder.setRw(rw);
+            return this;
+        }
+
+        public Builder withNVal(int nval) {
+            reqBuilder.setNVal(nval);
+            return this;
+        }
+
+        public Builder withTimeout(int timeout) {
+            if (timeout <= 0) {
+                throw new IllegalArgumentException("Timeout can not be zero or less");
+            }
+            reqBuilder.setTimeout(timeout);
+            return this;
+        }
+
+        public Builder withRecvTimeout(int recvTimeout) {
+            if (recvTimeout <= 0) {
+                throw new IllegalArgumentException("Timeout can not be zero or less");
+            }
+            reqBuilder.setRecvTimeout(recvTimeout);
+            return this;
+        }
+
+        public Builder withBasicQuorum(boolean basicQuorum) {
+            reqBuilder.setBasicQuorum(basicQuorum);
+            return this;
+        }
+
+        public Builder withSloppyQuorum(boolean sloppyQuorum) {
+            reqBuilder.setSloppyQuorum(sloppyQuorum);
+            return this;
+        }
+
+        public Builder withNotFoundOk(boolean notFoundOk) {
+            reqBuilder.setNotfoundOk(notFoundOk);
+            return this;
+        }
+
+        public Builder withAsis(boolean asis) {
+            reqBuilder.setAsis(asis);
+            return this;
+        }
+
+//        public Builder withSyncOnWrite(String asis) {
+//            reqBuilder.setSyncOnWrite(ByteString.copyFromUtf8(asis));
+//            return this;
+//        }
+
+        public Builder withDetails(Details details) {
+            reqBuilder.addDetails(ByteString.copyFromUtf8(details.toString()));
+            return this;
+        }
+
+
+        public Builder self() {
+            return this;
+        }
+
+        public CloneOperation build() {
             return new CloneOperation(this);
         }
 
-    }
 
-    protected static abstract class KvResponseBase
-    {
-        private final List<RiakObject> objectList;
+        public enum Details {
+            TIMING("timing"), VNODES("vnodes"), TRUE("true"), FALSE("false");
 
-        protected KvResponseBase(Init<?> builder)
-        {
-            this.objectList = builder.objectList;
+            final String detailsStr;
+
+            Details(String detailsStr) {
+                this.detailsStr = detailsStr;
+            }
         }
 
-        public List<RiakObject> getObjectList()
-        {
-            return objectList;
-        }
+        public enum ProvenanceMetadata {
+            STORE("store"), STRIP("strip");
 
-        protected static abstract class Init<T extends Init<T>>
-        {
-            private final List<RiakObject> objectList = new LinkedList<>();
-            protected abstract T self();
-            protected abstract KvResponseBase build();
+            final String provMetaStr;
 
-            T addObject(RiakObject object)
-            {
-                objectList.add(object);
-                return self();
+            ProvenanceMetadata(String provMetaStr) {
+                this.provMetaStr = provMetaStr;
             }
 
-            T addObjects(List<RiakObject> objects)
-            {
-                objectList.addAll(objects);
-                return self();
+            public String toString() {
+                return this.provMetaStr;
             }
         }
     }
 
-    public static class Response extends KvResponseBase
-    {
+    public static class Response extends FetchOperation.KvResponseBase {
+
+        private final BinaryValue generatedKey;
         private final boolean notFound;
+        private final RiakResponseException delFail;
+        private final Map<String, String> details;
 
-        private Response(Init<?> builder)
-        {
+        private Response(Init<?> builder) {
             super(builder);
             this.notFound = builder.notFound;
+            this.generatedKey = builder.generatedKey;
+            this.delFail = builder.delFail;
+            this.details = builder.details;
         }
 
-        public boolean isNotFound()
-        {
+        public boolean isNotFound() {
             return notFound;
         }
 
-        protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
-        {
-            private boolean notFound;
+        public boolean hasGeneratedKey() {
+            return generatedKey != null;
+        }
 
-            T withNotFound(boolean notFound)
-            {
+        public BinaryValue getGeneratedKey() {
+            return generatedKey;
+        }
+
+        public boolean hasDelFail() {
+            return delFail != null;
+        }
+
+        public RiakResponseException getDelFail() {
+            return delFail;
+        }
+
+        public boolean hasDetails() {
+            return details != null && !details.isEmpty();
+        }
+
+        public Map<String, String> getDetails() {
+            return details;
+        }
+
+        protected static abstract class Init<T extends Init<T>> extends FetchOperation.KvResponseBase.Init<T> {
+            private boolean notFound;
+            private BinaryValue generatedKey;
+            private RiakResponseException delFail;
+            private Map<String, String> details;
+
+            T withNotFound(boolean notFound) {
                 this.notFound = notFound;
+                return self();
+            }
+
+            T withGeneratedKey(BinaryValue key) {
+                this.generatedKey = key;
+                return self();
+            }
+
+            T withDelFail(RiakResponseException delFail) {
+                this.delFail = delFail;
+                return self();
+            }
+
+            T withDetails(Map<String, String> details) {
+                this.details = details;
                 return self();
             }
         }
 
-        static class Builder extends Init<Builder>
-        {
+        static class Builder extends Init<Builder> {
             @Override
-            protected Builder self()
-            {
+            protected Builder self() {
                 return this;
             }
 
             @Override
-            protected Response build()
-            {
+            protected Response build() {
                 return new Response(this);
             }
         }
     }
+
 }
