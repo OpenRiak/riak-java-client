@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class ITestCopy extends ITestBase {
@@ -99,7 +100,8 @@ public class ITestCopy extends ITestBase {
             client.execute(copy);
             fail("Expected to fail");
         } catch (ExecutionException e) {
-            assertEquals(e.getCause(), new RiakResponseException(0, "notfound"));
+            assertTrue(e.getCause() instanceof RiakResponseException);
+            assertEquals(e.getCause().getMessage(), "notfound");
         }
     }
 

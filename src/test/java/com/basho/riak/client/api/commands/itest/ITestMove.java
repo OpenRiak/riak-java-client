@@ -99,7 +99,8 @@ public class ITestMove extends ITestBase {
             client.execute(move);
             fail("Expected to fail");
         } catch (ExecutionException e) {
-            assertEquals(e.getCause(), new RiakResponseException(0, "notfound"));
+            assertTrue(e.getCause() instanceof RiakResponseException);
+            assertEquals(e.getCause().getMessage(), "notfound");
         }
     }
 
