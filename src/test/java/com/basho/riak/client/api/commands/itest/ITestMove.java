@@ -6,6 +6,7 @@ import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.api.commands.kv.MoveValue;
 import com.basho.riak.client.api.commands.kv.StoreValue;
+import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -16,8 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ITestMove extends ITestBase {
 
@@ -93,8 +93,14 @@ public class ITestMove extends ITestBase {
         Location sourceLocation = new Location(booksBucket, "unknown_source_location");
         Location moveLocation = new Location(new Namespace("move-books"), "unused_dest_location");
 
-        MoveValue copy = new MoveValue.Builder(sourceLocation, moveLocation).build();
-        client.execute(copy);
+        MoveValue move = new MoveValue.Builder(sourceLocation, moveLocation).build();
+
+        try {
+            client.execute(move);
+            fail("Expected to fail");
+        } catch (ExecutionException e) {
+            assertEquals(e.getCause(), new RiakResponseException(0, "notfound"));
+        }
     }
 
     @Test
@@ -110,7 +116,7 @@ public class ITestMove extends ITestBase {
         assertNotNull(fetchedBook);
         assertEquals(fetchedBook.author, "Herman Melville");
 
-        Location moveLocation = new Location(new Namespace("copy-books"), "moby_dick_2");
+        Location moveLocation = new Location(new Namespace("copy-books"), "moby_dick_move2");
         MoveValue moveBook = new MoveValue.Builder(bookLocation, moveLocation)
                 .withOption(MoveValue.Option.RETURN_BODY, true)
                 .build();
@@ -133,6 +139,25 @@ public class ITestMove extends ITestBase {
         fetchedBook = moveFetchRes.getValue(Book.class);
         assertNotNull(fetchedBook);
         assertEquals(fetchedBook.author, "Herman Melville");
+    }
+
+    @Test
+    public void testMoveDestinationExists() throws ExecutionException, InterruptedException {
+        // Insert Data
+        Location bookLocation = new Location(booksBucket, "moby_dick_m4");
+        insertBookData(client, bookLocation);
+
+        Location moveLocation = new Location(booksBucket, "moby_dick_m5");
+        insertBookData(client, bookLocation);
+
+        MoveValue move = new MoveValue.Builder(bookLocation, moveLocation).build();
+
+        try {
+            client.execute(move);
+            fail("Expected to fail");
+        } catch (ExecutionException e) {
+            assertEquals(e.getCause(), new RiakResponseException(0, "destination_not_empty"));
+        }
     }
 
     private void insertBookData(RiakClient client, Location location)

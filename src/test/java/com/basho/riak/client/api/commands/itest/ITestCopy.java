@@ -6,6 +6,7 @@ import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.api.commands.kv.CopyValue;
 import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.api.commands.kv.StoreValue;
+import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -16,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.fail;
 
 public class ITestCopy extends ITestBase {
 
@@ -92,7 +94,13 @@ public class ITestCopy extends ITestBase {
         Location copyLocation = new Location(new Namespace("copy-books"), "unused_dest_location");
 
         CopyValue copy = new CopyValue.Builder(sourceLocation, copyLocation).build();
-        client.execute(copy);
+
+        try {
+            client.execute(copy);
+            fail("Expected to fail");
+        } catch (ExecutionException e) {
+            assertEquals(e.getCause(), new RiakResponseException(0, "notfound"));
+        }
     }
 
     @Test
@@ -131,6 +139,25 @@ public class ITestCopy extends ITestBase {
         fetchedBook = cloneFetchRes.getValue(Book.class);
         assertNotNull(fetchedBook);
         assertEquals(fetchedBook.author, "Herman Melville");
+    }
+
+    @Test
+    public void testMoveDestinationExists() throws ExecutionException, InterruptedException {
+        // Insert Data
+        Location bookLocation = new Location(booksBucket, "moby_dick_4");
+        insertBookData(client, bookLocation);
+
+        Location copyLocation = new Location(booksBucket, "moby_dick_5");
+        insertBookData(client, bookLocation);
+
+        CopyValue copy = new CopyValue.Builder(bookLocation, copyLocation).build();
+
+        try {
+            client.execute(copy);
+            fail("Expected to fail");
+        } catch (ExecutionException e) {
+            assertEquals(e.getCause(), new RiakResponseException(0, "destination_not_empty"));
+        }
     }
 
     private void insertBookData(RiakClient client, Location location)
