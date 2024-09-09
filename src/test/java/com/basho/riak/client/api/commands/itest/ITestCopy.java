@@ -142,13 +142,13 @@ public class ITestCopy extends ITestBase {
     }
 
     @Test
-    public void testMoveDestinationExists() throws ExecutionException, InterruptedException {
+    public void testCopyDestinationExists() throws ExecutionException, InterruptedException {
         // Insert Data
         Location bookLocation = new Location(booksBucket, "moby_dick_4");
         insertBookData(client, bookLocation);
 
         Location copyLocation = new Location(booksBucket, "moby_dick_5");
-        insertBookData(client, bookLocation);
+        insertBookData(client, copyLocation);
 
         CopyValue copy = new CopyValue.Builder(bookLocation, copyLocation).build();
 

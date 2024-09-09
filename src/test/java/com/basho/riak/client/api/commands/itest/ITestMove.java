@@ -148,7 +148,7 @@ public class ITestMove extends ITestBase {
         insertBookData(client, bookLocation);
 
         Location moveLocation = new Location(booksBucket, "moby_dick_m5");
-        insertBookData(client, bookLocation);
+        insertBookData(client, moveLocation);
 
         MoveValue move = new MoveValue.Builder(bookLocation, moveLocation).build();
 
