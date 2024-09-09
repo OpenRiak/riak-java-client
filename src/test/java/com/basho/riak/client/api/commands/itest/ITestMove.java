@@ -157,7 +157,8 @@ public class ITestMove extends ITestBase {
             client.execute(move);
             fail("Expected to fail");
         } catch (ExecutionException e) {
-            assertEquals(e.getCause(), new RiakResponseException(0, "destination_not_empty"));
+            assertTrue(e.getCause() instanceof RiakResponseException);
+            assertEquals(e.getCause().getMessage(), "destination_not_empty");
         }
     }
 
