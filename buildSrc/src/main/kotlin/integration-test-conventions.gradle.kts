@@ -61,12 +61,12 @@ val configureRiak by tasks.creating(Exec::class) {
 
     executable = "bash"
     commandLine(
-        "./riak_tools/riak-cluster-config",
+        "./riak-client-tools/riak-cluster-config",
         "docker exec $baseImage riak admin",
         8098,
         false,
         false,
-        "riak_tools/bucket-types"
+        "riak-client-tools/bucket-types"
     )
 }
 

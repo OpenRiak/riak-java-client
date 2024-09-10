@@ -71,7 +71,7 @@ The submodules can be updated to the latest commits with: `git submodule update 
   - This contains the `.proto` files that are common between server and client
   - As part of the build protobuf parses these files and generates java classes that are used in the java riak client
 
-- riak_tools which is pulled from the branch `master` from https://bitbucket.internal.invalid/scm/dssst/riak-client-tools.git
+- `riak-client-tools` which is pulled from the branch `master` from https://bitbucket.internal.invalid/scm/dssst/riak-client-tools.git
   - This contains some scripts that are used to configure a running riak for integration tests
 
 
