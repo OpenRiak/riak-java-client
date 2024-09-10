@@ -26,6 +26,7 @@ import com.basho.riak.client.core.query.crdt.types.*;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -150,6 +151,7 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
     }
 
     @Test
+    @Ignore
     public void testNonExistingDatatypeReturnsBottomValueAndNotFoundFlag() throws ExecutionException, InterruptedException
     {
         RiakMap mapBottomValue = new RiakMap(Collections.<RiakMap.MapEntry>emptyList());

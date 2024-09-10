@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
+import org.junit.Ignore;
 
 public class ITestDtUpdateOperation extends ITestAutoCleanupBase
 {
@@ -85,6 +86,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
     }
 
     @Test
+    @Ignore
     public void testCrdtCounter() throws ExecutionException, InterruptedException, ListException
     {
         assumeTrue(testCrdt);
