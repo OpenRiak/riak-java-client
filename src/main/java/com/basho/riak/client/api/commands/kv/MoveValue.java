@@ -5,6 +5,7 @@ import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.api.commands.RiakOption;
 import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.CloneOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -85,22 +86,31 @@ public class MoveValue extends GenericRiakCommand.GenericRiakCommandWithSameInfo
 
         // TODO do we want to expose any returned details?
 
-        // Note doesn't need to care about del_fail in response, should not have been asked to delete source
-        // See buildCoreOperation clone requests sets delete to be false
-        return new MoveValue.Response.Builder()
+        MoveValue.Response.Builder builder = new MoveValue.Response.Builder()
                 .withValues(coreResponse.getObjectList())
                 .withGeneratedKey(loc.getKey())
-                .withLocation(loc)
-                .build();
+                .withLocation(loc);
+
+        // We set delete source for moves so should check if it succeeded
+        // leaves it to the caller to decide if this should be a failure
+        // aka returns that the delete step may have failed or not completed yet but leaves the decision to fail on that
+        // up to the caller
+        if (coreResponse.hasDelFail()) {
+            builder.withDelFail(coreResponse.getDelFail());
+        }
+
+        return builder.build();
     }
 
     public static class Response extends KvResponseBase {
 
         private final BinaryValue generatedKey;
+        private final RiakResponseException delFail;
 
         Response(MoveValue.Response.Init<?> builder) {
             super(builder);
             this.generatedKey = builder.generatedKey;
+            this.delFail = builder.delFail;
         }
 
         public boolean hasGeneratedKey() {
@@ -111,12 +121,38 @@ public class MoveValue extends GenericRiakCommand.GenericRiakCommandWithSameInfo
             return generatedKey;
         }
 
+        /**
+         * Indicates whether delFail was returned, indicating that the delete source step of the move may have failed or not
+         * be completed yet
+         *
+         * @return True if delFail set, false otherwise
+         */
+        public Boolean hasDelFail() {
+            return delFail != null;
+        }
+
+        /**
+         * Returns the set delFail from the clone operation,  indicating that the delete source step of the move may have failed or not
+         * be completed yet
+         *
+         * @return The RiakResponseException for the delFail or null if not set
+         */
+        public RiakResponseException getDelFail() {
+            return delFail;
+        }
+
         protected static abstract class Init<T extends MoveValue.Response.Init<T>> extends KvResponseBase.Init<T> {
 
             private BinaryValue generatedKey;
+            private RiakResponseException delFail;
 
             T withGeneratedKey(BinaryValue key) {
                 this.generatedKey = key;
+                return self();
+            }
+
+            T withDelFail(RiakResponseException delFail) {
+                this.delFail = delFail;
                 return self();
             }
         }
