@@ -74,7 +74,7 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
     protected CloneOperation.Response convert(List<RiakKvPB.RpbCloneResp> responses) {
         // This is not a streaming op, there will only be one response
         if (responses.size() > 1) {
-            logger.error("Received {} responses when only one was expected.", responses.size());
+            logger.error("Received {} responses when only one was expected for RpbCloneResp requests.", responses.size());
         }
 
         final RiakKvPB.RpbCloneResp response = responses.get(0);
