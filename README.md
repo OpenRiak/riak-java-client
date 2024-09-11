@@ -88,6 +88,9 @@ the file `riak_protobuf/src/riak_pb_messages.csv`.  It looks like this has alrea
 since the riak java client doesn't use any of the newer ones. In this repo the file is no longer being auto-generate so will
 need to be updated whenever the client needs an additional constant from `riak_protobuf/src/riak_pb_messages.csv`
 
+*Update:* (as of `1.12.0`) `com.basho.riak.protobuf.util.TemplateController` has been removed and the Gradle task `generateMessageCodes` can be used 
+to generate the class `RiakMessageCodes` from the provided file `riak_pb/src/riak_pb_messages.csv`. As a note this task should
+be run if there is changes in the `riak_pb_messages.csv` that want to be uptaken and the task should be run before any compile/build tasks
 
 For the protobuf update from 2.x to 3.x, it looks like the only change was a change from:
 ```java
