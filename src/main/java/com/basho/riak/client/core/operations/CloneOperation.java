@@ -61,13 +61,9 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
 
         try {
             byte[] data = message.getData();
-
-            if (data.length == 0) // not found (TODO is this true? how does clone work if source not found?)
-            {
-                return null;
-            }
+            // Expecting the data to not be empty otherwise invalid, if the source wasn't found it would result in an
+            // error message being returned instead (aka "notfound")
             return RiakKvPB.RpbCloneResp.parseFrom(data);
-
         } catch (InvalidProtocolBufferException e) {
             logger.error("Invalid message received", e);
             throw new IllegalArgumentException("Invalid message received", e);
@@ -89,81 +85,74 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
     private CloneOperation.Response convert(RiakKvPB.RpbCloneResp response) {
         CloneOperation.Response.Builder responseBuilder = new CloneOperation.Response.Builder();
 
-        // If the response is null ... it means not found. Riak only sends
-        // a message code and zero bytes when that's the case. (See: decode() )
-        // Because that makes sense!
-        if (null == response) {
-            responseBuilder.withNotFound(true);
-        } else {
-            // This only exists if no key was specified in the put request
-            if (response.hasKey()) {
-                responseBuilder.withGeneratedKey(BinaryValue.unsafeCreate(response.getKey().toByteArray()));
-            }
+        // This only exists if no key was specified in the put request
+        if (response.hasKey()) {
+            responseBuilder.withGeneratedKey(BinaryValue.unsafeCreate(response.getKey().toByteArray()));
+        }
 
-            // Only exists if the request has delete_src=true
-            if (response.hasDelFail()) {
-                try {
-                    OtpInputStream is = new OtpInputStream(response.getDelFail().toByteArray());
+        // Only exists if the request has delete_src=true
+        if (response.hasDelFail()) {
+            try {
+                OtpInputStream is = new OtpInputStream(response.getDelFail().toByteArray());
 
-                    //When present, the del_error fields will be an ETF-encoded term. Likely values:
-                    // - atom
-                    // - tuple(atom, integer)
-                    // - tuple(atom, integer, integer)
+                //When present, the del_error fields will be an ETF-encoded term. Likely values:
+                // - atom
+                // - tuple(atom, integer)
+                // - tuple(atom, integer, integer)
 
-                    int firstByte = is.read1skip_version();
-                    is.reset();
+                int firstByte = is.read1skip_version();
+                is.reset();
 
-                    if (firstByte == OtpExternal.smallTupleTag || firstByte == OtpExternal.largeTupleTag) {
-                        int arity = is.read_tuple_head();
-                        String atom = is.read_atom();
-                        int code = 0;
-                        if (arity > 1) {
-                            code = is.read_int();
-                        }
-                        responseBuilder.withDelFail(new RiakResponseException(code, atom));
-                    } else if (firstByte == OtpExternal.atomTag) {
-                        String atom = is.read_atom();
-                        responseBuilder.withDelFail(new RiakResponseException(0, atom));
-                    } else {
-                        // Don't know try and decode it and use it
-                        String msg = OtpErlangObject.decode(is).toString();
-                        responseBuilder.withDelFail(new RiakResponseException(0, msg));
+                if (firstByte == OtpExternal.smallTupleTag || firstByte == OtpExternal.largeTupleTag) {
+                    int arity = is.read_tuple_head();
+                    String atom = is.read_atom();
+                    int code = 0;
+                    if (arity > 1) {
+                        code = is.read_int();
                     }
-                } catch (OtpErlangDecodeException e) {
-                    logger.error("DelFail was present in RpbCloneResp but could not parse it", e);
-                    responseBuilder.withDelFail(new RiakResponseException(0, "DelFail was present in RpbCloneResp but could not parse it"));
+                    responseBuilder.withDelFail(new RiakResponseException(code, atom));
+                } else if (firstByte == OtpExternal.atomTag) {
+                    String atom = is.read_atom();
+                    responseBuilder.withDelFail(new RiakResponseException(0, atom));
+                } else {
+                    // Don't know try and decode it and use it
+                    String msg = OtpErlangObject.decode(is).toString();
+                    responseBuilder.withDelFail(new RiakResponseException(0, msg));
                 }
+            } catch (OtpErlangDecodeException e) {
+                logger.error("DelFail was present in RpbCloneResp but could not parse it", e);
+                responseBuilder.withDelFail(new RiakResponseException(0, "DelFail was present in RpbCloneResp but could not parse it"));
             }
+        }
 
-            // Only exists if the request had details requested
-            List<RiakPB.RpbPair> details = response.getDetailsList();
-            if (!details.isEmpty()) {
-                // details, when requested, is a list of {key = atom, value = ETF-encoded} pairs, where values are likely:
-                // - integer (microseconds)
-                // - list(tuple(atom, integer))
-                // - maybe (not sure) (b) values could be a deep (nested) list of (b)
-                // For now opting to return the keys and values as strings, unsure how we want to expose this yet
-                Map<String, String> parsed = details.stream().collect(Collectors.toMap(
-                        pair -> pair.getKey().toStringUtf8(),
-                        pair -> pair.getValue().toStringUtf8()
-                ));
-                responseBuilder.withDetails(parsed);
-            }
+        // Only exists if the request had details requested
+        List<RiakPB.RpbPair> details = response.getDetailsList();
+        if (!details.isEmpty()) {
+            // details, when requested, is a list of {key = atom, value = ETF-encoded} pairs, where values are likely:
+            // - integer (microseconds)
+            // - list(tuple(atom, integer))
+            // - maybe (not sure) (b) values could be a deep (nested) list of (b)
+            // For now opting to return the keys and values as strings, unsure how we want to expose this yet
+            Map<String, String> parsed = details.stream().collect(Collectors.toMap(
+                    pair -> pair.getKey().toStringUtf8(),
+                    pair -> pair.getValue().toStringUtf8()
+            ));
+            responseBuilder.withDetails(parsed);
+        }
 
-            // Note RiakMessageCodec and RiakMessage has a handling for `response.getError()`
-            // its treated as an error and listeners should already be invoked, aka should not reach here if had the error
-            // field set
+        // Note RiakMessageCodec and RiakMessage has a handling for `response.getError()`
+        // its treated as an error and listeners should already be invoked, aka should not reach here if had the error
+        // field set
 
-            // To unify the behavior of having just a tombstone vs. siblings
-            // that include a tombstone, we create an empty object and mark
-            // it deleted
-            if (response.getContentCount() == 0) {
-                RiakObject ro = new RiakObject().setDeleted(true).setVClock(new BasicVClock(response.getVclock().toByteArray()));
+        // To unify the behavior of having just a tombstone vs. siblings
+        // that include a tombstone, we create an empty object and mark
+        // it deleted
+        if (response.getContentCount() == 0) {
+            RiakObject ro = new RiakObject().setDeleted(true).setVClock(new BasicVClock(response.getVclock().toByteArray()));
 
-                responseBuilder.addObject(ro);
-            } else {
-                responseBuilder.addObjects(RiakObjectConverter.convert(response.getContentList(), response.getVclock()));
-            }
+            responseBuilder.addObject(ro);
+        } else {
+            responseBuilder.addObjects(RiakObjectConverter.convert(response.getContentList(), response.getVclock()));
         }
 
         return responseBuilder.build();
@@ -360,20 +349,14 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
     public static class Response extends FetchOperation.KvResponseBase {
 
         private final BinaryValue generatedKey;
-        private final boolean notFound;
         private final RiakResponseException delFail;
         private final Map<String, String> details;
 
         private Response(Init<?> builder) {
             super(builder);
-            this.notFound = builder.notFound;
             this.generatedKey = builder.generatedKey;
             this.delFail = builder.delFail;
             this.details = builder.details;
-        }
-
-        public boolean isNotFound() {
-            return notFound;
         }
 
         public boolean hasGeneratedKey() {
@@ -401,15 +384,9 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
         }
 
         protected static abstract class Init<T extends Init<T>> extends FetchOperation.KvResponseBase.Init<T> {
-            private boolean notFound;
             private BinaryValue generatedKey;
             private RiakResponseException delFail;
             private Map<String, String> details;
-
-            T withNotFound(boolean notFound) {
-                this.notFound = notFound;
-                return self();
-            }
 
             T withGeneratedKey(BinaryValue key) {
                 this.generatedKey = key;
