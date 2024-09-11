@@ -287,7 +287,10 @@ public class CopyValue extends GenericRiakCommand.GenericRiakCommandWithSameInfo
 
     @Override
     public String toString() {
-        return String.format("{namespace: %s, key: %s, options: %s}", srcLocation, dstLocation, options);
+        return String.format(
+                "{source location: %s, destination location: %s, options: %s}",
+                srcLocation, dstLocation, options
+        );
     }
 
 }
