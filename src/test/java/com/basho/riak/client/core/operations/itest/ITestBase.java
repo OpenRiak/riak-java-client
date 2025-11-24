@@ -204,7 +204,10 @@ public abstract class ITestBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        ListKeys listKeys = new ListKeys.Builder(namespace).withAllowListing().build();
+        ListKeys listKeys = new ListKeys.Builder(namespace)
+                .withAllowListing()
+                .withTimeout(30000)  // 30 seconds timeout
+                .build();
         final ListKeys.Response listKeyResponse = client.execute(listKeys);
 
         MultiDelete multiDelete = new MultiDelete.Builder().addLocations(listKeyResponse).build();

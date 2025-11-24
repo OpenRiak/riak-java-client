@@ -118,6 +118,7 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
         final ListBucketsOperation listOp = new ListBucketsOperation.Builder()
                 .withBucketType(BinaryValue.createFromUtf8(bucketType))
                 .streamResults(true)
+                .withTimeout(30000)
                 .build();
 
         final StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> execute = cluster.execute(listOp);
@@ -181,6 +182,7 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
     {
         final ListBucketsOperation listOp = new ListBucketsOperation.Builder()
                 .withBucketType(BinaryValue.createFromUtf8(bucketType))
+                .withTimeout(30000)
                 .build();
         cluster.execute(listOp);
         return listOp.get().getBuckets();

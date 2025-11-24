@@ -161,7 +161,10 @@ public class ITestListKeysOperation extends ITestBase
     {
         final Namespace ns = setupBucket(bucketType, numExpected);
 
-        final ListKeysOperation slko = new ListKeysOperation.Builder(ns).streamResults(true).build();
+        final ListKeysOperation slko = new ListKeysOperation.Builder(ns)
+                .streamResults(true)
+                .withTimeout(30000)
+                .build();
         final StreamingRiakFuture<ListKeysOperation.Response, Namespace> execute = cluster.execute(slko);
 
         final BlockingQueue<ListKeysOperation.Response> resultsQueue = execute.getResultsQueue();
@@ -198,7 +201,9 @@ public class ITestListKeysOperation extends ITestBase
 
     private List<BinaryValue> getAllKeyListResults(Namespace ns) throws InterruptedException, ExecutionException
     {
-        final ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).build();
+        final ListKeysOperation klistOp = new ListKeysOperation.Builder(ns)
+                .withTimeout(30000)
+                .build();
         cluster.execute(klistOp);
         return klistOp.get().getKeys();
     }

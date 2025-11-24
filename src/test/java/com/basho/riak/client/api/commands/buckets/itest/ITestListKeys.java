@@ -70,7 +70,10 @@ public class ITestListKeys extends ITestBase
     {
         assumeTrue(testBucketType);
 
-        ListKeys lk = new ListKeys.Builder(typedNamespace).withAllowListing().build();
+        ListKeys lk = new ListKeys.Builder(typedNamespace)
+                .withAllowListing()
+                .withTimeout(30000)
+                .build();
 
         final RiakFuture<ListKeys.Response, Namespace> streamFuture =
                 client.executeAsyncStreaming(lk, 200);

@@ -40,7 +40,9 @@ public class ITestListKeysOperation extends ITestTsBase
     @Test
     public void testSingleFetch() throws ExecutionException, InterruptedException
     {
-        ListKeysOperation listKeysOp = new ListKeysOperation.Builder(tableName).build();
+        ListKeysOperation listKeysOp = new ListKeysOperation.Builder(tableName)
+                .withTimeout(30000)
+                .build();
 
         final RiakFuture<QueryResult, String> future = cluster.execute(listKeysOp);
 

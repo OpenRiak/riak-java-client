@@ -118,7 +118,10 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        ListKeys listKeys = new ListKeys.Builder(tableName).withAllowListing().build();
+        ListKeys listKeys = new ListKeys.Builder(tableName)
+                .withAllowListing()
+                .withTimeout(30000)
+                .build();
 
         final RiakFuture<QueryResult, String> listKeysFuture = client.executeAsync(listKeys);
 

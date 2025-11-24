@@ -92,7 +92,10 @@ public class ITestListBuckets extends ITestBase
 
     private void testListBuckets(Namespace namespace) throws InterruptedException, ExecutionException, ListException
     {
-        ListBuckets listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType()).withAllowListing().build();
+        ListBuckets listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType())
+                .withAllowListing()
+                .withTimeout(30000)
+                .build();
 
         final ListBuckets.Response listResponse = client.execute(listBucketsCommand);
 
@@ -110,7 +113,10 @@ public class ITestListBuckets extends ITestBase
 
     private void testListBucketsStreaming(Namespace namespace) throws InterruptedException, ExecutionException, ListException
     {
-        ListBuckets listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType()).withAllowListing().build();
+        ListBuckets listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType())
+                .withAllowListing()
+                .withTimeout(30000)
+                .build();
 
         final RiakFuture<ListBuckets.Response, BinaryValue> streamingFuture =
                 client.executeAsyncStreaming(listBucketsCommand, 500);

@@ -1,5 +1,6 @@
 import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerExecContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerLogsContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
 import com.bmuschko.gradle.docker.tasks.image.DockerPullImage
@@ -41,7 +42,15 @@ val createContainer by tasks.creating(DockerCreateContainer::class) {
 
     hostConfig.portBindings.set(listOf("8087:8087", "8098:8098"))
     hostConfig.autoRemove.set(true)
+
+    // In case mounting is required:
+    // hostConfig.binds.set(listOf(
+    //     "/tmp/workday-riak-tests/riak1/lib:/var/lib/riak",
+    //     "/tmp/workday-riak-tests/riak1/log:/var/log/riak"
+    // ))
 }
+
+
 
 val startContainer by tasks.creating(DockerStartContainer::class) {
     dependsOn(createContainer)
@@ -53,8 +62,56 @@ val waitForRiak by tasks.creating(DockerExecContainer::class) {
     dependsOn(startContainer)
 
     targetContainerId(startContainer.containerId)
-    commands.set(listOf(arrayOf("riak", "ping")))
+
+    // We won't use the standard command for testing health
+    // because we need to loop.
+    // We use this just to satisfy the type requirements.
+    commands.set(listOf(arrayOf("true")))
+    doLast {
+        var attempts = 0
+        val maxAttempts = 20
+        var success = false
+
+        logger.lifecycle("Waiting for Riak to become reachable...")
+
+        while (attempts < maxAttempts && !success) {
+            val result = project.exec {
+                commandLine("docker", "exec", baseImage, "riak", "ping")
+                isIgnoreExitValue = true
+                standardOutput = System.out
+            }
+
+            if (result.exitValue == 0) {
+                success = true
+                logger.lifecycle("Riak is up!")
+            } else {
+                attempts++
+                logger.lifecycle("Riak not ready yet (Attempt $attempts/$maxAttempts)... waiting 2s")
+                Thread.sleep(2000)
+            }
+        }
+
+        if (!success) {
+            logger.error("Timeout waiting for Riak. Fetching logs...")
+            project.exec { commandLine("docker", "logs", baseImage) }
+            throw GradleException("Riak failed to start within timeout.")
+        }
+    }
 }
+
+// In order to run with devrels -- comment out Docker tasks above.
+
+// val configureRiak by tasks.creating(Exec::class) {
+//     executable = "bash"
+//     commandLine(
+//         "./riak-client-tools/riak-cluster-config",
+//         "<path/to/devrel/bin/riak> admin",
+//         10028,
+//         false,
+//         false,
+//         "riak-client-tools/bucket-types"
+//     )
+// }
 
 val configureRiak by tasks.creating(Exec::class) {
     dependsOn(waitForRiak)
