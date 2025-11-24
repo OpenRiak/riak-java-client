@@ -30,7 +30,6 @@ import io.netty.util.concurrent.BlockingOperationException;
 import io.netty.util.concurrent.DefaultPromise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.basho.riak.client.core.util.Constants;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -91,6 +90,12 @@ public class RiakNode implements RiakResponseListener
     private volatile int readTimeoutInMillis;
 
     private HealthCheckFactory healthCheckFactory;
+
+    private AtomicLong getConnectionFailures = new AtomicLong(0);
+    private AtomicLong currentHealthCheckFailed = new AtomicLong(0);
+    private final String STANDARD_SUGGESTION = "One node being down does not imply the whole " +
+            "RIAK cluster is; down. Please check with RIAK team if you see this for " +
+            "too many nodes in the cluster or it persists for too long.";
 
     private final ChannelFutureListener writeListener =
         new ChannelFutureListener()
@@ -733,8 +738,14 @@ public class RiakNode implements RiakResponseListener
 
         if (!f.isSuccess())
         {
-            logger.error("Connection attempt failed: {}:{}; {}",
-                remoteAddress, port, f.cause());
+            long numberOfFailures = getConnectionFailures.get();
+            //log the first one and then every 100th thereafter
+            if ((numberOfFailures == 0) || (getConnectionFailures.get() > 100)) {
+                logger.warn("Connection attempt failed: {}:{}; {}. {}.",
+                        remoteAddress, port, f.cause(), STANDARD_SUGGESTION);
+                getConnectionFailures.set(1); //reset counter after logging
+            }
+            getConnectionFailures.incrementAndGet();
             consecutiveFailedConnectionAttempts.incrementAndGet();
             throw new ConnectionFailedException(f.cause());
         }
@@ -1239,8 +1250,14 @@ public class RiakNode implements RiakResponseListener
         }
         else
         {
-            logger.error("RiakNode failed healthcheck operation; {}:{} {}",
-                remoteAddress, port, cause);
+            long numberOfHealthCheckFailures = currentHealthCheckFailed.get();
+            //log the first one and then every 100th thereafter
+            if ((numberOfHealthCheckFailures == 0) || (numberOfHealthCheckFailures > 100)) {
+                logger.warn("RiakNode failed healthcheck operation; {}:{} {}. {}",
+                        remoteAddress, port, cause, STANDARD_SUGGESTION);
+                currentHealthCheckFailed.set(1); //reset counter after logging
+            }
+            currentHealthCheckFailed.incrementAndGet();
         }
     }
 
