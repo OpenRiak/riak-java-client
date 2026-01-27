@@ -98,6 +98,12 @@ dependencies {
             }
         }
 
+        api("org.javassist:javassist") {
+            version {
+                require("3.+")
+            }
+        }
+
         api("com.jayway.awaitility:awaitility") {
             version {
                 require("1.+")

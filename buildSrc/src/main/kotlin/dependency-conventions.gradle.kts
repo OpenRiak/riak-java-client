@@ -6,8 +6,10 @@ configurations {
                 all {
                     val rejected = candidate.version.contains("-rc", ignoreCase = true) ||
                             candidate.version.contains("alpha", ignoreCase = true) ||
-                            candidate.version.contains("-beta", ignoreCase = true) ||
-                            candidate.version.contains("snapshot", ignoreCase = true)
+                            candidate.version.contains("beta", ignoreCase = true) ||
+                            candidate.version.contains("snapshot", ignoreCase = true) ||
+                            candidate.version.contains("-M", ignoreCase = true) // Exclude milestone releases
+
 
                     if (rejected) {
                         logger.info("Rejecting version ${candidate.version} of ${candidate.displayName}")
@@ -18,6 +20,7 @@ configurations {
         }
     }
 }
+
 
 tasks.register("resolveAndLockAll") {
     doFirst {

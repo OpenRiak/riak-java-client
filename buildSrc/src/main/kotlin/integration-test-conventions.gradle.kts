@@ -1,9 +1,9 @@
 import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerExecContainer
-import com.bmuschko.gradle.docker.tasks.container.DockerLogsContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
 import com.bmuschko.gradle.docker.tasks.image.DockerPullImage
+import org.gradle.kotlin.dsl.support.serviceOf
 
 
 /**
@@ -73,9 +73,9 @@ val waitForRiak by tasks.creating(DockerExecContainer::class) {
         var success = false
 
         logger.lifecycle("Waiting for Riak to become reachable...")
-
+        val execOps = project.serviceOf<ExecOperations>()
         while (attempts < maxAttempts && !success) {
-            val result = project.exec {
+            val result = execOps.exec {
                 commandLine("docker", "exec", baseImage, "riak", "ping")
                 isIgnoreExitValue = true
                 standardOutput = System.out
@@ -93,7 +93,7 @@ val waitForRiak by tasks.creating(DockerExecContainer::class) {
 
         if (!success) {
             logger.error("Timeout waiting for Riak. Fetching logs...")
-            project.exec { commandLine("docker", "logs", baseImage) }
+            execOps.exec { commandLine("docker", "logs", baseImage) }
             throw GradleException("Riak failed to start within timeout.")
         }
     }

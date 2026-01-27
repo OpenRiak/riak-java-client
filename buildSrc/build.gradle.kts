@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -9,29 +10,29 @@ plugins {
 // The toolchain used by gradle is 11 as plugins are built with that jvm in mind
 // Note we can still build a jar that targets 8 while using the 11 JDK
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "11"
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
 
 dependencies {
-    // Gradle packages a version of kotlin that is 1.9.+ so match that to avoid pulling in later versions (will need to update when gradle updates)
-    implementation(enforcedPlatform("org.jetbrains.kotlin:kotlin-bom:1.9.+"))
+    // Gradle packages a version of kotlin that is 2.2.+ so match that to avoid pulling in later versions (will need to update when gradle updates)
+    implementation(enforcedPlatform("org.jetbrains.kotlin:kotlin-bom:2.2.+"))
 
     /**
      * Needed for xray-scanning
      * Not entirely sure why needed to explicitly add xray-java, without it can't import com.workday.be.xray.Severity
      */
-    implementation(plugin("wd-xray", "0.+"))
-    implementation("com.workday.be.xray:xray-java:0.+")
+    implementation(plugin("wd-xray", "4.+"))
+    implementation("com.workday.be.xray:xray-java") // Pull it in but don't specify a version so take what wd-xray uses
 
     // Needed for handling the results from xray scans (aka jiras slack etc)
-    implementation(plugin("xray-jira-automator", "0.+"))
+    implementation(plugin("xray-jira-automator", "3.+"))
 
     // For performing http requests
     implementation("com.squareup.okhttp3:okhttp:4.+") {
@@ -46,7 +47,7 @@ dependencies {
     // For protobuf generation from .proto files
     implementation(plugin("com.google.protobuf", version = "0.+"))
 
-    implementation("com.bmuschko:gradle-docker-plugin:9.+")
+    implementation("com.bmuschko:gradle-docker-plugin:10.+")
 
     /**
      * Slack integration

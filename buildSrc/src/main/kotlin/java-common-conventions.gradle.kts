@@ -16,7 +16,7 @@ plugins {
  */
 java {
     // Explicitly set the target and source compatability to 11
-    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 
     // Include a sources jar
     withSourcesJar()
@@ -57,6 +57,14 @@ tasks.withType<Jar> {
 // Unit tests
 tasks.test {
     useJUnit()
+
+    jvmArgs(
+        "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+        "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED",
+        "--add-opens", "java.base/java.util=ALL-UNNAMED",
+        "--add-opens", "java.base/java.util.concurrent=ALL-UNNAMED",
+        "--add-opens", "java.base/java.util.concurrent.locks=ALL-UNNAMED"
+    )
 
     testLogging {
         events("passed", "skipped", "failed")

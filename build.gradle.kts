@@ -96,7 +96,7 @@ protobuf {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
 // Generate the RiakMessageCodes.java file from the riak_pb_messages.csv file
