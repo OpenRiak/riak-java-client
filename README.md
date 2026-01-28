@@ -63,6 +63,8 @@ allprojects {
 
 ## Notes
 
+Project is built with Java 21.
+
 This project pulls in two git submodules 
 
 When project is first pulled, the submodules will need to be initialised with: `git submodule update --init`.
