@@ -190,3 +190,7 @@ gradle-app.setting
 
 .kube
 k8s
+
+# Ignore Kotlin compiler sessions
+/.kotlin
+/buildSrc/.kotlin
