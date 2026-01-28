@@ -17,17 +17,17 @@ package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.util.HostAndPort;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A modeled Riak Cluster.
@@ -87,7 +87,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         else
         {
             this.bootstrap = new Bootstrap()
-                .group(new NioEventLoopGroup())
+                .group(new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory()))
                 .channel(NioSocketChannel.class);
         }
 

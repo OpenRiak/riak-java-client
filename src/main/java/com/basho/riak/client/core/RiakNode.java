@@ -19,11 +19,8 @@ import com.basho.riak.client.core.netty.*;
 import com.basho.riak.client.core.util.Constants;
 import com.basho.riak.client.core.util.HostAndPort;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.util.concurrent.BlockingOperationException;
@@ -247,7 +244,7 @@ public class RiakNode implements RiakResponseListener
         if (bootstrap == null)
         {
             bootstrap = new Bootstrap()
-                .group(new NioEventLoopGroup())
+                .group(new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory()))
                 .channel(NioSocketChannel.class);
             ownsBootstrap = true;
         }
