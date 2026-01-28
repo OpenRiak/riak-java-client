@@ -65,6 +65,8 @@ allprojects {
 
 This project pulls in two git submodules 
 
+When project is first pulled, the submodules will need to be initialised with: `git submodule update --init`.
+
 The submodules can be updated to the latest commits with: `git submodule update --remote `
 
 - riak_protobuf which is pulled from the branch `workday-develop-3.0` from https://bitbucket.internal.invalid/scm/dssst/riak_pb.git
