@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Basho Technologies Inc
+ * Copyright 2026 Workday, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -221,6 +222,28 @@ public class DeleteOperation extends FutureOperation<Void, Void, Location>
         public Builder withSloppyQuorum(boolean sloppyQuorum)
         {
             reqBuilder.setSloppyQuorum(sloppyQuorum);
+            return this;
+        }
+
+        /**
+         * Set the trace ID for distributed tracing.
+         * @param traceId the trace ID as a byte array.
+         * @return a reference to this object.
+         */
+        public Builder withTraceId(byte[] traceId)
+        {
+            reqBuilder.setTraceId(ByteString.copyFrom(traceId));
+            return this;
+        }
+
+        /**
+         * Set the batch ID for distributed tracing.
+         * @param batchId the batch ID as a byte array.
+         * @return a reference to this object.
+         */
+        public Builder withBatchId(byte[] batchId)
+        {
+            reqBuilder.setBatchId(ByteString.copyFrom(batchId));
             return this;
         }
 

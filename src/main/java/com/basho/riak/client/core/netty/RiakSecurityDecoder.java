@@ -1,5 +1,6 @@
 /*
  * Copyright 2014 Basho Technologies Inc.
+ * Copyright 2026 Workday, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -214,15 +215,24 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
             if (future.isSuccess())
             {
                 logger.debug("SSL Handshake success!");
-                Channel c = future.getNow();
-                state = State.AUTH_WAIT;
-                RiakPB.RpbAuthReq authReq =
-                RiakPB.RpbAuthReq.newBuilder()
-                    .setUser(ByteString.copyFromUtf8(username))
-                    .setPassword(ByteString.copyFromUtf8(password))
-                    .build();
-                c.writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_AuthReq,
-                                authReq.toByteArray()));
+                if (username != null && !username.isEmpty())
+                {
+                    Channel c = future.getNow();
+                    state = State.AUTH_WAIT;
+                    RiakPB.RpbAuthReq authReq =
+                    RiakPB.RpbAuthReq.newBuilder()
+                        .setUser(ByteString.copyFromUtf8(username))
+                        .setPassword(ByteString.copyFromUtf8(password))
+                        .build();
+                    c.writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_AuthReq,
+                                    authReq.toByteArray()));
+                }
+                else
+                {
+                    logger.debug("TLS-only mode (no auth credentials)");
+                    future.getNow().pipeline().remove(RiakSecurityDecoder.this);
+                    promise.trySuccess(null);
+                }
             }
             else
             {

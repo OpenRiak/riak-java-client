@@ -65,6 +65,19 @@ allprojects {
 
 Project is built with Java 21.
 
+### TLS and Authentication Behavior
+
+TLS and authentication are independent:
+
+- `withForceTls(true)` triggers STARTTLS even when no credentials are provided.
+- Authentication is only attempted when non-empty credentials are configured.
+- `withTls(KeyStore trustStore)` can be used to apply a custom trust store for
+  TLS-only connections (no username/password required).
+- If only `withForceTls(true)` is used, JVM default trust is used.
+
+This is useful for secure transport-only deployments where cluster auth is not
+enabled, while still validating server certificates.
+
 This project pulls in two git submodules 
 
 When project is first pulled, the submodules will need to be initialised with: `git submodule update --init`.

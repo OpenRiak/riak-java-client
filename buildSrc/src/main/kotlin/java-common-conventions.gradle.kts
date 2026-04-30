@@ -61,6 +61,7 @@ tasks.test {
     jvmArgs(
         "--add-opens", "java.base/java.lang=ALL-UNNAMED",
         "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED",
+        "--add-opens", "java.base/java.security=ALL-UNNAMED",
         "--add-opens", "java.base/java.util=ALL-UNNAMED",
         "--add-opens", "java.base/java.util.concurrent=ALL-UNNAMED",
         "--add-opens", "java.base/java.util.concurrent.locks=ALL-UNNAMED"

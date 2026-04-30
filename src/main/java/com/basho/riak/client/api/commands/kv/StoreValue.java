@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Basho Technologies Inc
+ * Copyright 2026 Workday, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -198,6 +199,14 @@ public final class StoreValue extends GenericRiakCommand.GenericRiakCommandWithS
             {
                 builder.withReturnBody((Boolean) opPair.getValue());
             }
+            else if (option == Option.TRACE_ID)
+            {
+                builder.withTraceId((byte[]) opPair.getValue());
+            }
+            else if (option == Option.BATCH_ID)
+            {
+                builder.withBatchId((byte[]) opPair.getValue());
+            }
         }
 
         return builder.build();
@@ -261,6 +270,8 @@ public final class StoreValue extends GenericRiakCommand.GenericRiakCommandWithS
        public static final Option<Boolean> ASIS = new Option<>("ASIS");
        public static final Option<Boolean> SLOPPY_QUORUM = new Option<>("SLOPPY_QUORUM");
        public static final Option<Integer> N_VAL = new Option<>("N_VAL");
+       public static final Option<byte[]> TRACE_ID = new Option<>("TRACE_ID");
+       public static final Option<byte[]> BATCH_ID = new Option<>("BATCH_ID");
 
        private Option(String name)
        {

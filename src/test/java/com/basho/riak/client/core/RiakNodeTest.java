@@ -40,6 +40,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import java.lang.reflect.Field;
+import java.security.KeyStore;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Deque;
@@ -542,7 +543,10 @@ public class RiakNodeTest
     @Test(expected = UnknownHostException.class)
     public void failsResolvingHostname() throws UnknownHostException
     {
-        RiakNode node = new RiakNode.Builder().withRemoteAddress("invalid-host-name").build();
+        RiakNode node = new RiakNode.Builder()
+            .withRemoteAddress("nonexistent.invalid")
+            .withMinConnections(0)
+            .build();
         node.start();
     }
 
@@ -1017,6 +1021,54 @@ public class RiakNodeTest
                 notifyListeners();
             }
         }
+    }
+
+    @Test
+    public void withTlsSetsTrustStoreAndForcesTls() throws Exception
+    {
+        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        trustStore.load(null, null);
+
+        RiakNode node = new RiakNode.Builder()
+            .withTls(trustStore)
+            .build();
+
+        KeyStore actualTrustStore = Whitebox.getInternalState(node, "trustStore");
+        boolean actualForceTls = Whitebox.getInternalState(node, "forceTls");
+
+        assertSame(trustStore, actualTrustStore);
+        assertTrue(actualForceTls);
+    }
+
+    @Test
+    public void withTlsDoesNotRequireCredentials() throws Exception
+    {
+        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        trustStore.load(null, null);
+
+        RiakNode node = new RiakNode.Builder()
+            .withTls(trustStore)
+            .build();
+
+        String username = Whitebox.getInternalState(node, "username");
+        String password = Whitebox.getInternalState(node, "password");
+
+        assertNull(username);
+        assertNull(password);
+    }
+
+    @Test
+    public void withForceTlsAloneUsesDefaultTrust()
+    {
+        RiakNode node = new RiakNode.Builder()
+            .withForceTls(true)
+            .build();
+
+        boolean actualForceTls = Whitebox.getInternalState(node, "forceTls");
+        KeyStore actualTrustStore = Whitebox.getInternalState(node, "trustStore");
+
+        assertTrue(actualForceTls);
+        assertNull(actualTrustStore);
     }
 
     private class BlockingExceptionTestSetup

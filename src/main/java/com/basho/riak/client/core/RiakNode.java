@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Basho Technologies, Inc.
+ * Copyright 2026 Workday, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +34,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
@@ -70,6 +72,9 @@ public class RiakNode implements RiakResponseListener
     private final KeyStore trustStore;
     private final KeyStore keyStore;
     private final String keyPassword;
+    private final boolean forceTls;
+    private final int socketReceiveBufferSize;
+    private final int socketSendBufferSize;
     private final AtomicLong consecutiveFailedOperations = new AtomicLong(0);
     private final AtomicLong consecutiveFailedConnectionAttempts = new AtomicLong(0);
 
@@ -187,6 +192,9 @@ public class RiakNode implements RiakResponseListener
         this.trustStore = builder.trustStore;
         this.keyStore = builder.keyStore;
         this.keyPassword = builder.keyPassword;
+        this.forceTls = builder.forceTls;
+        this.socketReceiveBufferSize = builder.socketReceiveBufferSize;
+        this.socketSendBufferSize = builder.socketSendBufferSize;
         this.healthCheckFactory = builder.healthCheckFactory;
         this.readTimeoutInMillis = builder.readTimeout;
 
@@ -258,6 +266,16 @@ public class RiakNode implements RiakResponseListener
             bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout);
         }
 
+        if (socketReceiveBufferSize > 0)
+        {
+            bootstrap.option(ChannelOption.SO_RCVBUF, socketReceiveBufferSize);
+        }
+
+        if (socketSendBufferSize > 0)
+        {
+            bootstrap.option(ChannelOption.SO_SNDBUF, socketSendBufferSize);
+        }
+
         if (minConnections > 0)
         {
             List<Channel> minChannels = new LinkedList<>();
@@ -293,14 +311,11 @@ public class RiakNode implements RiakResponseListener
 
     private void refreshBootstrapRemoteAddress() throws UnknownHostException
     {
-        // Refresh the address, hope their DNS TTL settings allow this.
-        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, port);
-
-        if (socketAddress.isUnresolved())
-        {
-            throw new UnknownHostException("RiakNode:start - Failed resolving host " + remoteAddress);
-        }
-
+        // Resolve synchronously so invalid hostnames fail with UnknownHostException here
+        // instead of only after a long connect timeout (InetSocketAddress(host, port) can
+        // appear "resolved" until connect on some JDKs).
+        InetAddress address = InetAddress.getByName(remoteAddress);
+        InetSocketAddress socketAddress = new InetSocketAddress(address, port);
         bootstrap.remoteAddress(socketAddress);
     }
 
@@ -750,7 +765,7 @@ public class RiakNode implements RiakResponseListener
         consecutiveFailedConnectionAttempts.set(0);
         Channel c = f.channel();
 
-        if (trustStore != null)
+        if (trustStore != null || forceTls)
         {
             setupTLSAndAuthenticate(c);
         }
@@ -763,19 +778,26 @@ public class RiakNode implements RiakResponseListener
         SSLContext context;
         try
         {
-            context = SSLContext.getInstance("TLS");
-            TrustManagerFactory tmf =
-                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(trustStore);
-                if (keyStore!=null)
+            if (trustStore != null)
             {
-                KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());
-                context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+                context = SSLContext.getInstance("TLS");
+                TrustManagerFactory tmf =
+                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                tmf.init(trustStore);
+                if (keyStore != null)
+                {
+                    KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                    kmf.init(keyStore, keyPassword == null ? "".toCharArray() : keyPassword.toCharArray());
+                    context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+                }
+                else
+                {
+                    context.init(null, tmf.getTrustManagers(), null);
+                }
             }
             else
             {
-                context.init(null, tmf.getTrustManagers(), null);
+                context = SSLContext.getDefault();
             }
         }
         catch (Exception ex)
@@ -807,8 +829,18 @@ public class RiakNode implements RiakResponseListener
         try
         {
             DefaultPromise<Void> promise = decoder.getPromise();
-                logger.debug("Waiting on SSL Promise");
-            promise.await();
+            logger.debug("Waiting on SSL Promise");
+            final long tlsWaitMillis = connectionTimeout > 0 ? connectionTimeout : 30_000L;
+            boolean completed = promise.await(tlsWaitMillis, TimeUnit.MILLISECONDS);
+            if (!completed)
+            {
+                c.close();
+                TimeoutException timeoutEx = new TimeoutException(
+                    "Timed out waiting for TLS/auth handshake after " + tlsWaitMillis + "ms");
+                logger.error("TLS/auth handshake timed out; {}:{} {}",
+                    remoteAddress, port, timeoutEx.getMessage());
+                throw new ConnectionFailedException(timeoutEx);
+            }
 
             if (promise.isSuccess())
             {
@@ -1351,6 +1383,12 @@ public class RiakNode implements RiakResponseListener
          */
         public final static HealthCheckFactory DEFAULT_HEALTHCHECK_FACTORY = new PingHealthCheck();
 
+        /**
+         * The default socket buffer size in bytes: {@value #DEFAULT_SOCKET_BUFFER_SIZE}
+         * (128KB, matching the Erlang client default for TLS performance)
+         */
+        public final static int DEFAULT_SOCKET_BUFFER_SIZE = 131072;
+
         private int port = DEFAULT_REMOTE_PORT;
         private String remoteAddress = DEFAULT_REMOTE_ADDRESS;
         private int minConnections = DEFAULT_MIN_CONNECTIONS;
@@ -1367,6 +1405,9 @@ public class RiakNode implements RiakResponseListener
         private KeyStore trustStore;
         private KeyStore keyStore;
         private String keyPassword;
+        private boolean forceTls;
+        private int socketReceiveBufferSize = DEFAULT_SOCKET_BUFFER_SIZE;
+        private int socketSendBufferSize = DEFAULT_SOCKET_BUFFER_SIZE;
 
         /**
          * Default constructor. Returns a new builder for a RiakNode with
@@ -1611,6 +1652,75 @@ public class RiakNode implements RiakResponseListener
             this.trustStore = trustStore;
             this.keyStore = keyStore;
             this.keyPassword = keyPassword;
+            return this;
+        }
+
+        /**
+         * Enable TLS encryption using the supplied trust store without authentication.
+         * <p>
+         * This mirrors the Erlang client behavior where TLS and auth are independent:
+         * STARTTLS runs first, then auth runs only if credentials are present.
+         * </p>
+         * <p>
+         * Equivalent to calling {@code withForceTls(true)} and setting the trust store,
+         * but without requiring username/password.
+         * </p>
+         *
+         * @param trustStore A Java KeyStore loaded with the CA certificate(s) for TLS/SSL.
+         * @return a reference to this object.
+         */
+        public Builder withTls(KeyStore trustStore)
+        {
+            this.trustStore = trustStore;
+            this.forceTls = true;
+            return this;
+        }
+
+        /**
+         * Enable TLS encryption without requiring Riak security credentials.
+         * <p>
+         * When set to true, the client will perform a STARTTLS handshake
+         * to encrypt the connection regardless of whether credentials or a
+         * trustStore are configured. If no trustStore is provided, the
+         * system default trust store will be used.
+         * </p>
+         * <p>
+         * If credentials are also configured (via {@link #withAuth}), authentication
+         * will proceed after the TLS handshake as normal.
+         * </p>
+         *
+         * @param forceTls true to force TLS on the connection.
+         * @return a reference to this object.
+         */
+        public Builder withForceTls(boolean forceTls)
+        {
+            this.forceTls = forceTls;
+            return this;
+        }
+
+        /**
+         * Set the TCP socket receive buffer size (SO_RCVBUF).
+         *
+         * @param size buffer size in bytes.
+         * @return a reference to this object.
+         * @see #DEFAULT_SOCKET_BUFFER_SIZE
+         */
+        public Builder withSocketReceiveBufferSize(int size)
+        {
+            this.socketReceiveBufferSize = size;
+            return this;
+        }
+
+        /**
+         * Set the TCP socket send buffer size (SO_SNDBUF).
+         *
+         * @param size buffer size in bytes.
+         * @return a reference to this object.
+         * @see #DEFAULT_SOCKET_BUFFER_SIZE
+         */
+        public Builder withSocketSendBufferSize(int size)
+        {
+            this.socketSendBufferSize = size;
             return this;
         }
 

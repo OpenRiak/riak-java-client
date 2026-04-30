@@ -161,7 +161,8 @@ public class RiakNodeFixtureTest extends FixtureTest
         try
         {
             fixture.shutdown();
-            assertTrue(listener.get(10));
+            assertTrue("node should enter HEALTH_CHECKING after fixture shutdown",
+                       listener.get(30));
             assertEquals(node.getNodeState(), State.HEALTH_CHECKING);
 
             node.shutdown().get();

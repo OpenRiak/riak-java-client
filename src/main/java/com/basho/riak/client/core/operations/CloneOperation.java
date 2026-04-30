@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Workday, Inc.
+ * Copyright (c) 2024-2026 Workday, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -311,6 +311,16 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
             return this;
         }
 
+
+        /**
+         * Set the trace ID for distributed tracing.
+         * @param traceId the trace ID as a byte array.
+         * @return a reference to this object.
+         */
+        public Builder withTraceId(byte[] traceId) {
+            reqBuilder.setTraceId(ByteString.copyFrom(traceId));
+            return this;
+        }
 
         public Builder self() {
             return this;
