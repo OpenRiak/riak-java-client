@@ -1,5 +1,6 @@
 /*
- * Copyright 2013 Basho Technologies Inc.
+ * Copyright 2013 (c) Basho Technologies Inc.
+ * Copyright 2026 (c) Workday, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +35,9 @@ import org.powermock.reflect.Whitebox;
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
+ * modified by George Madi <george.madi@workday.com>
+ *      - added extra tests for incremental frame consumption to allow
+ *          very large objects to be read quickly
  */
 public class RiakMessageCodecTest
 {
@@ -86,5 +90,102 @@ public class RiakMessageCodecTest
         RiakMessage message = (RiakMessage) outList.get(0);
         assertEquals(code, message.getCode());
         assertArrayEquals(data, message.getData());
+    }
+
+    @Test
+    public void decodeFragmentedHeader() throws Exception
+    {
+        // Only 4 bytes arrive first (length prefix, no code byte yet)
+        RiakMessageCodec codec = new RiakMessageCodec();
+        List<Object> outList = new ArrayList<>();
+        ByteBuf buf = Unpooled.buffer();
+
+        buf.writeInt(SIZE_DATA + SIZE_CODE);
+        Whitebox.invokeMethod(codec, "decode", mockContext, buf, outList);
+        assertTrue("No message yet with only length prefix", outList.isEmpty());
+
+        buf.writeByte(code);
+        buf.writeBytes(data);
+        Whitebox.invokeMethod(codec, "decode", mockContext, buf, outList);
+
+        assertEquals(1, outList.size());
+        RiakMessage message = (RiakMessage) outList.get(0);
+        assertEquals(code, message.getCode());
+        assertArrayEquals(data, message.getData());
+    }
+
+    @Test
+    public void decodeFragmentedPayload() throws Exception
+    {
+        // Full header arrives, then payload in two chunks
+        RiakMessageCodec codec = new RiakMessageCodec();
+        List<Object> outList = new ArrayList<>();
+        ByteBuf buf = Unpooled.buffer();
+
+        buf.writeInt(SIZE_DATA + SIZE_CODE);
+        buf.writeByte(code);
+        buf.writeBytes(data, 0, SIZE_DATA / 2);
+        Whitebox.invokeMethod(codec, "decode", mockContext, buf, outList);
+        assertTrue("No message yet with partial payload", outList.isEmpty());
+
+        buf.writeBytes(data, SIZE_DATA / 2, SIZE_DATA - (SIZE_DATA / 2));
+        Whitebox.invokeMethod(codec, "decode", mockContext, buf, outList);
+
+        assertEquals(1, outList.size());
+        RiakMessage message = (RiakMessage) outList.get(0);
+        assertEquals(code, message.getCode());
+        assertArrayEquals(data, message.getData());
+    }
+
+    @Test
+    public void decodeOneByteAtATime() throws Exception
+    {
+        RiakMessageCodec codec = new RiakMessageCodec();
+        List<Object> outList = new ArrayList<>();
+        ByteBuf buf = Unpooled.buffer();
+
+        byte[] rawFrame = new byte[buffer.readableBytes()];
+        buffer.getBytes(buffer.readerIndex(), rawFrame);
+
+        for (int i = 0; i < rawFrame.length - 1; i++)
+        {
+            buf.writeByte(rawFrame[i]);
+            Whitebox.invokeMethod(codec, "decode", mockContext, buf, outList);
+            assertTrue("No message at byte " + i, outList.isEmpty());
+        }
+
+        buf.writeByte(rawFrame[rawFrame.length - 1]);
+        Whitebox.invokeMethod(codec, "decode", mockContext, buf, outList);
+
+        assertEquals(1, outList.size());
+        RiakMessage message = (RiakMessage) outList.get(0);
+        assertEquals(code, message.getCode());
+        assertArrayEquals(data, message.getData());
+    }
+
+    @Test
+    public void decodeTwoConsecutiveMessages() throws Exception
+    {
+        // Two complete messages in one buffer — exercises while loop
+        RiakMessageCodec codec = new RiakMessageCodec();
+        List<Object> outList = new ArrayList<>();
+        ByteBuf buf = Unpooled.buffer();
+
+        buf.writeInt(SIZE_DATA + SIZE_CODE);
+        buf.writeByte(code);
+        buf.writeBytes(data);
+        buf.writeInt(SIZE_DATA + SIZE_CODE);
+        buf.writeByte(code);
+        buf.writeBytes(data);
+
+        Whitebox.invokeMethod(codec, "decode", mockContext, buf, outList);
+
+        assertEquals(2, outList.size());
+        for (Object obj : outList)
+        {
+            RiakMessage message = (RiakMessage) obj;
+            assertEquals(code, message.getCode());
+            assertArrayEquals(data, message.getData());
+        }
     }
 }

@@ -1,5 +1,6 @@
 /*
- * Copyright 2013 Basho Technologies Inc.
+ * Copyright (c) 2013 Basho Technologies Inc.
+ * Copyright (c) 2026 Workday, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +25,22 @@ import java.util.List;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * modified by George Madi <george.madi@workday.com>
+ *      - added incremental frame consumption to allow very large objects to be read quickly
  */
 public class RiakMessageCodec extends ByteToMessageCodec<RiakMessage>
 {
+    /** Riak PB frame header: 4-byte length prefix plus 1-byte message code. */
+    private static final int FRAME_HEADER_BYTES = 5;
+
+    // In-progress frame state. Consuming each frame incrementally as bytes
+    // arrive keeps Netty's accumulation buffer tiny; waiting for a full frame
+    // would force the accumulation buffer to repeatedly reallocate and copy, which is
+    // O(n^2) for large (multi-GB) responses.
+    private byte code;
+    private byte[] payload;
+    private int payloadOffset;
+
     @Override
     protected void encode(ChannelHandlerContext ctx, RiakMessage msg, ByteBuf out) throws Exception
     {
@@ -39,25 +53,36 @@ public class RiakMessageCodec extends ByteToMessageCodec<RiakMessage>
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception
     {
-        // Make sure we have 4 bytes
-        if (in.readableBytes() >= 4)
+        while (true)
         {
-            in.markReaderIndex();
-            int length = in.readInt();
-
-            // See if we have the full frame.
-            if (in.readableBytes() < length)
+            if (payload == null)
             {
-                in.resetReaderIndex();
+                // Wait for the length prefix and message code; at most 4
+                // bytes are ever retained by the accumulation buffer between reads.
+                if (in.readableBytes() < FRAME_HEADER_BYTES)
+                {
+                    return;
+                }
+                int length = in.readInt();
+                code = in.readByte();
+                payload = new byte[length - 1];
+                payloadOffset = 0;
+            }
+
+            int toCopy = Math.min(in.readableBytes(), payload.length - payloadOffset);
+            if (toCopy > 0)
+            {
+                in.readBytes(payload, payloadOffset, toCopy);
+                payloadOffset += toCopy;
+            }
+
+            if (payloadOffset < payload.length)
+            {
                 return;
             }
-            else
-            {
-                byte code = in.readByte();
-                byte[] array = new byte[length - 1];
-                in.readBytes(array);
-                out.add(new RiakMessage(code,array));
-            }
+
+            out.add(new RiakMessage(code, payload));
+            payload = null;
         }
     }
 }
