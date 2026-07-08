@@ -5,6 +5,23 @@ This is effectively a fork of the branch `workday-develop-3.0` from: https://bit
 Most of the changes are around the build and test setup for using workday artifactory and gradle (as workday uses gradle for its common build plugins) 
 and switching to the workday bitbucket repos instead of the public github repos. 
 
+## Local credentials
+
+Gradle tasks read credentials from Gradle project properties.
+See [`gradle.properties.example`](gradle.properties.example) for the full list of property names,
+placeholder values, and which tasks require each property.
+
+Copy the entries you need into `~/.gradle/gradle.properties` or a local `gradle.properties`
+file. Do not commit real credential values.
+
+| Property | Required for |
+|----------|----------------|
+| `artifactory_user`, `artifactory_password` | `./gradlew publish` |
+| `artifactory_publish_codeline` | Publish target repo (defaults to `trunk` if unset) |
+| `atlassianUser`, `atlassianPassword` | `lockfileUpdates`, `checkoutLockFilePr`, CI PR validation |
+| `jiraEpic`, `slackToken`, `slackChannel` | Lockfile update automation only |
+| `validate`, `buildUrl`, `buildStage`, `repositoryRevision`, `approveOrDeny` | CI PR validator only |
+
 ## Gradle Tasks
 
 The project can be built and unit tested with the usual: `./gradlew build`

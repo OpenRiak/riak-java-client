@@ -194,3 +194,12 @@ k8s
 # Ignore Kotlin compiler sessions
 /.kotlin
 /buildSrc/.kotlin
+
+# auth
+.env
+.env.*
+*.pem
+*.key
+*-key.json
+!.env.example
+!**/.env.example
