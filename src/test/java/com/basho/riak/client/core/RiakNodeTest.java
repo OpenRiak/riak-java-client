@@ -736,6 +736,42 @@ public class RiakNodeTest
         verify(channelPipeline).remove(Constants.TIMEOUT_HANDLER);
     }
 
+    @Test
+    public void streamingOperationSuccessful_readTimeoutSet() throws InterruptedException, UnknownHostException
+    {
+        Channel channel = mock(Channel.class);
+        ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
+        ChannelFuture future = mock(ChannelFuture.class);
+        StreamingFutureOperationImpl operation = PowerMockito.spy(new StreamingFutureOperationImpl());
+        RiakMessage rm = mock(RiakMessage.class);
+        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
+
+        doReturn(future).when(channel).closeFuture();
+        doReturn(true).when(channel).isOpen();
+        doReturn(channelPipeline).when(channel).pipeline();
+        doReturn(future).when(channel).writeAndFlush(operation);
+        doReturn(future).when(future).await();
+        doReturn(true).when(future).isSuccess();
+        doReturn(channel).when(future).channel();
+        doReturn(future).when(bootstrap).connect();
+        doReturn(bootstrap).when(bootstrap).clone();
+
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap)
+                .withReadTimeout(1000)
+                .build();
+        node.start();
+        boolean accepted = node.execute(operation);
+        assertTrue(accepted);
+        verify(channelPipeline).addAfter(Mockito.eq(Constants.OPERATION_ENCODER), Mockito.eq(Constants.TIMEOUT_HANDLER),
+                Mockito.any(ReadTimeoutHandler.class));
+
+        node.onSuccess(channel, rm);
+        verify(channelPipeline, never()).remove(Constants.TIMEOUT_HANDLER);
+
+        node.onSuccess(channel, rm);
+        verify(channelPipeline, times(1)).remove(Constants.TIMEOUT_HANDLER);
+    }
+
     private void startAndRunBlockingExceptionTest(CompoundCommand compoundCommand,
                                                   Channel channel,
                                                   ChannelFuture future,
@@ -838,6 +874,17 @@ public class RiakNodeTest
         public Void getQueryInfo()
         {
             return null;
+        }
+    }
+
+    private class StreamingFutureOperationImpl extends FutureOperationImpl
+    {
+        private int responseCount = 0;
+
+        @Override
+        protected boolean done(Message message)
+        {
+            return ++responseCount >= 2;
         }
     }
 

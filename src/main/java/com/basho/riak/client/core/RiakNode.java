@@ -919,10 +919,6 @@ public class RiakNode implements RiakResponseListener
     {
         logger.debug("Operation onSuccess() channel: id:{} {}:{}", channel.hashCode(), remoteAddress, port);
         consecutiveFailedOperations.set(0);
-        if (readTimeoutInMillis > 0)
-        {
-            channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
-        }
 
         final FutureOperation inProgress = inProgressMap.get(channel);
 
@@ -936,6 +932,10 @@ public class RiakNode implements RiakResponseListener
             {
                 try
                 {
+                    if (readTimeoutInMillis > 0)
+                    {
+                        channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
+                    }
                     inProgressMap.remove(channel);
                     returnConnection(channel); // return permit
                 }
