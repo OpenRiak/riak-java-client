@@ -1,0 +1,4 @@
+[submodule "riak_pb"]
+	path = riak_pb
+	url = https://github.com/OpenRiak/riak_pb.git
+	branch = wday-develop-3.2

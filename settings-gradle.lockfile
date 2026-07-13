@@ -1,0 +1,13 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+com.github.zafarkhaja:java-semver:0.10.2=classpath
+com.googlecode.javaewah:JavaEWAH:1.2.3=classpath
+commons-codec:commons-codec:1.17.0=classpath
+org.ajoberstar.reckon.settings:org.ajoberstar.reckon.settings.gradle.plugin:0.19.2=classpath
+org.ajoberstar.reckon:reckon-core:0.19.2=classpath
+org.ajoberstar.reckon:reckon-gradle:0.19.2=classpath
+org.apache.commons:commons-lang3:3.17.0=classpath
+org.eclipse.jgit:org.eclipse.jgit:6.10.0.202406032230-r=classpath
+org.slf4j:slf4j-api:2.1.0-alpha1=classpath
+empty=

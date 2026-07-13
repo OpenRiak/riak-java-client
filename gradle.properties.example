@@ -1,0 +1,20 @@
+# Optional Gradle properties for this project.
+#
+# Copy any you need into ./gradle.properties or ~/.gradle/gradle.properties.
+# None are required for a normal `./gradlew build`.
+
+# -----------------------------------------------------------------------------
+# Integration tests (./gradlew itest)
+# -----------------------------------------------------------------------------
+# Integration tests run against an already-running Riak node (not started by the build).
+# Enable backend-specific test groups as needed (default off):
+#riakTimeseries=true
+#riakTwoI=true
+#riakMapReduce=true
+
+# -----------------------------------------------------------------------------
+# Release versioning (Reckon)
+# -----------------------------------------------------------------------------
+# Used when cutting releases, e.g. ./gradlew -Preckon.stage=final -Preckon.scope=patch
+#reckon.stage=final
+#reckon.scope=patch
