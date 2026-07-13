@@ -1,86 +1,88 @@
-# Workday Riak Client
+# Riak Java Client (OpenRiak)
 
-This is effectively a fork of the branch `workday-develop-3.0` from: https://bitbucket.internal.invalid/projects/DSSST/repos/riak-java-client/browse
+A Java client for interacting with a [Riak](https://github.com/OpenRiak/riak) cluster
+over the Protocol Buffers API.
 
-Most of the changes are around the build and test setup for using workday artifactory and gradle (as workday uses gradle for its common build plugins) 
-and switching to the workday bitbucket repos instead of the public github repos. 
+This project continues development of the original
+[Basho riak-java-client](https://github.com/basho/riak-java-client), which is no longer
+maintained.
 
-## Local credentials
+## Requirements
 
-Gradle tasks read credentials from Gradle project properties.
-See [`gradle.properties.example`](gradle.properties.example) for the full list of property names,
-placeholder values, and which tasks require each property.
+- Java 21 (the build uses a Gradle Java toolchain targeting 21).
+- Git (for fetching the `riak_pb` submodule).
+- A running Riak node (only for the optional integration tests).
 
-Copy the entries you need into `~/.gradle/gradle.properties` or a local `gradle.properties`
-file. Do not commit real credential values.
+## Submodules
 
-| Property | Required for |
-|----------|----------------|
-| `artifactory_user`, `artifactory_password` | `./gradlew publish` |
-| `artifactory_publish_codeline` | Publish target repo (defaults to `trunk` if unset) |
-| `atlassianUser`, `atlassianPassword` | `lockfileUpdates`, `checkoutLockFilePr`, CI PR validation |
-| `jiraEpic`, `slackToken`, `slackChannel` | Lockfile update automation only |
-| `validate`, `buildUrl`, `buildStage`, `repositoryRevision`, `approveOrDeny` | CI PR validator only |
+This project uses one git submodule:
 
-## Gradle Tasks
+- [`riak_pb`](https://github.com/OpenRiak/riak_pb) (branch `openriak-3.4`) - the shared
+  `.proto` files. Protobuf generates the Java message classes from these during the build.
 
-The project can be built and unit tested with the usual: `./gradlew build`
+The `riak-client-tools` scripts (used to configure a Riak node for integration tests) are
+vendored directly into this repository under [`riak-client-tools/`](riak-client-tools/).
+This was done to avoid having to depend on a repo still under the old Basho org.
 
-Can exclude tests and just build the jar with: `./gradlew build -x test`
+Initialize the submodule after cloning:
 
-Can run the unit tests with: `./gradlew test`
-
-Can run the integration tests with: `./gradlew itest`
-  
-  - Note to run the integration test must have Docker setup on the machine such that `docker` commands can be run
-  - Note the integration tests currently pull very old images of riak
-
-
-The jar can be published with: `./gradlew publish`
-
-  - Will use the configured `artifactory_publish_codeline` which defaults to "trunk"
-  - Can add the param `-Partifactory_publish_codeline=experimental` to publish to an experimental repo
-    - To consume from this repo this in a project would need to configure something like this 
-```kotlin
-val artifactory_user: String? by project
-val artifactory_password: String? by project
-
-allprojects {
-    repositories {
-        exclusiveContent {
-            forRepository {
-                maven {
-                    url = URI.create("https://artifactory.internal.invalid/artifactory/workday-experimental")
-                    credentials {
-                        username = artifactory_user
-                        password = artifactory_password
-                    }
-                }
-                ivy {
-                    url = URI.create("https://artifactory.internal.invalid/artifactory/workday-experimental")
-                    credentials {
-                        username = artifactory_user
-                        password = artifactory_password
-                    }
-                    patternLayout {
-                        artifact("[orgPath]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]")
-                        artifact("[orgPath]/[module]/[revision]/[artifact](-[classifier]).[ext]")
-                        ivy("[orgPath]/[module]/[revision]/ivy.xml")
-                    }
-                }
-            }
-            filter {
-                includeModule("com.workday.riak","riak-client")
-            }
-        }
-    }
-}
-
+```bash
+git submodule update --init
 ```
 
-## Notes
+Update it to the latest commit on its tracked branch:
 
-Project is built with Java 21.
+```bash
+git submodule update --remote
+```
+
+## Building
+
+Build and run unit tests:
+
+```bash
+./gradlew build
+```
+
+Build the jar without running tests:
+
+```bash
+./gradlew build -x test
+```
+
+Run only the unit tests:
+
+```bash
+./gradlew test
+```
+
+### `RiakMessageCodes`
+
+`com.basho.riak.protobuf.RiakMessageCodes` is a generated file that is checked into the
+repository. It is regenerated from `riak_pb/src/riak_pb_messages.csv` with:
+
+```bash
+./gradlew generateMessageCodes
+```
+
+Run this whenever the message codes in `riak_pb` change and you need to pick up new
+constants, then rebuild.
+
+## Integration tests
+
+Integration tests are optional and are **not** run as part of `./gradlew build`.
+
+```bash
+./gradlew itest
+```
+
+- They run against an **already-running** Riak node; the build does not start one for you.
+  Start a node (for example a local devrel) and configure its bucket types using the scripts
+  under [`riak-client-tools/`](riak-client-tools/) before running the tests.
+- Backend-specific test groups are off by default. Enable them when running against a
+  suitable node, e.g. `-PriakTimeseries=true`, `-PriakTwoI=true`, `-PriakMapReduce=true`.
+
+## Notes
 
 ### TLS and Authentication Behavior
 
@@ -92,70 +94,6 @@ TLS and authentication are independent:
   TLS-only connections (no username/password required).
 - If only `withForceTls(true)` is used, JVM default trust is used.
 
-This is useful for secure transport-only deployments where cluster auth is not
-enabled, while still validating server certificates.
+## License
 
-This project pulls in two git submodules 
-
-When project is first pulled, the submodules will need to be initialised with: `git submodule update --init`.
-
-The submodules can be updated to the latest commits with: `git submodule update --remote `
-
-- riak_protobuf which is pulled from the branch `workday-develop-3.0` from https://bitbucket.internal.invalid/scm/dssst/riak_pb.git
-  - This contains the `.proto` files that are common between server and client
-  - As part of the build protobuf parses these files and generates java classes that are used in the java riak client
-
-- `riak-client-tools` which is pulled from the branch `master` from https://bitbucket.internal.invalid/scm/dssst/riak-client-tools.git
-  - This contains some scripts that are used to configure a running riak for integration tests
-
-
-# Notable Changes
-
-THe generated protobuf files were checked into the repo under the package `com.basho.riak.protobuf`. These have
-been removed in favor of letting protobuf generate them each time, note that they are still packages into the library.
-
-
-Under `com.basho.riak.protobuf` there exists `RiakMessageCodes`, which is noted as auto-generated, but it is not generated by
-protobuf. It was actually generated by a separate plugin which used the class `com.basho.riak.protobuf.util.TemplateController`
-to generate it. Essentially, this produced a java class with a bunch of static constants to match up with what is listed in
-the file `riak_protobuf/src/riak_pb_messages.csv`.  It looks like this has already become out of sync but likley not an issue
-since the riak java client doesn't use any of the newer ones. In this repo the file is no longer being auto-generate so will
-need to be updated whenever the client needs an additional constant from `riak_protobuf/src/riak_pb_messages.csv`
-
-*Update:* (as of `1.12.0`) `com.basho.riak.protobuf.util.TemplateController` has been removed and the Gradle task `generateMessageCodes` can be used 
-to generate the class `RiakMessageCodes` from the provided file `riak_pb/src/riak_pb_messages.csv`. As a note this task should
-be run if there is changes in the `riak_pb_messages.csv` that want to be uptaken and the task should be run before any compile/build tasks
-
-For the protobuf update from 2.x to 3.x, it looks like the only change was a change from:
-```java
-protected final Builder<?> reqBuilder;
-```
-to
-```java
-protected final Message.Builder reqBuilder;
-```
-In the following classes:
-
-- `com.basho.riak.client.core.operations.PBFutureOperation`
-- `com.basho.riak.client.core.PBStreamingFutureOperation.PBStreamingFutureOperation`
-- `com.basho.riak.client.core.operations.PBFutureOperation.PBFutureOperation`
-- and some of their subclasses.
-
-It looks like the `workday-develop-3.0` of the riak java client and the proto files have diveraged slightly, most notably the 
-java client code reports a missing enum `Blob` in following classes:
-- `com.basho.riak.client.core.query.timeseries.Cell`
-- `com.basho.riak.client.core.codec.TermToBinaryCodec`
-
-For now the problematic pieces are commented out, for example:
-```java
-//                case BLOB:
-//                    return new Cell(v.binaryValue());
-```
-
-
-Many test classes failed to compile due to an undeclared exception class that could be thrown but not listed in the methods
-throws clause. This exception is the `ListException` which has been added.
-
-Many tests failed due to calling list being rejected with an exception saying it is not allowed be run (with a `ListException`)
-To resolve the test classes that build up list requests needed to also set `withAllowListing` in the builders of those requests
-in order to actually run the requests/tests.
+Licensed under the Apache License, Version 2.0. See [`LICENSE`](LICENSE).

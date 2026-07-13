@@ -94,7 +94,9 @@ dependencies {
 
         api("org.hamcrest:hamcrest-core") {
             version {
-                require("1.+")
+                // Pin to the Maven Central release; "1.+" can otherwise resolve to the
+                // Atlassian-only "1.4-atlassian-1" variant that is not on Maven Central.
+                require("1.3")
             }
         }
 

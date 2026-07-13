@@ -7,6 +7,13 @@ plugins {
     `kotlin-dsl`
 }
 
+// Resolve plugins and dependencies from public repositories so the build works
+// off any internal network.
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
+
 // The toolchain used by gradle is 11 as plugins are built with that jvm in mind
 // Note we can still build a jar that targets 8 while using the 11 JDK
 java {
@@ -24,47 +31,8 @@ dependencies {
     // Gradle packages a version of kotlin that is 2.2.+ so match that to avoid pulling in later versions (will need to update when gradle updates)
     implementation(enforcedPlatform("org.jetbrains.kotlin:kotlin-bom:2.2.+"))
 
-    /**
-     * Needed for xray-scanning
-     * Not entirely sure why needed to explicitly add xray-java, without it can't import com.workday.be.xray.Severity
-     */
-    implementation(plugin("wd-xray", "4.+"))
-    implementation("com.workday.be.xray:xray-java") // Pull it in but don't specify a version so take what wd-xray uses
-
-    // Needed for handling the results from xray scans (aka jiras slack etc)
-    implementation(plugin("xray-jira-automator", "3.+"))
-
-    // For performing http requests
-    implementation("com.squareup.okhttp3:okhttp:4.+") {
-        because("Needed for Http Requests in gradle scripts")
-    }
-
-    // For parsing responses
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.+") {
-        because("Needed json serializing/deserializing")
-    }
-
     // For protobuf generation from .proto files
     implementation(plugin("com.google.protobuf", version = "0.+"))
-
-    implementation("com.bmuschko:gradle-docker-plugin:10.+")
-
-    /**
-     * Slack integration
-     */
-    implementation("com.slack.api:slack-api-client:1.+")
-    implementation("com.slack.api:slack-api-model-kotlin-extension:1.+")
-    implementation("com.slack.api:slack-api-client-kotlin-extension:1.+")
-
-    /**
-     * Git Integration
-     */
-    implementation("org.eclipse.jgit:org.eclipse.jgit:6.+")
-    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:6.+")
-}
-
-dependencyLocking {
-    lockAllConfigurations()
 }
 
 /**
@@ -72,16 +40,3 @@ dependencyLocking {
  * typically looks like "plugin-name:plugin-name.gradle.plugin:version"
  */
 fun plugin(plugin: String, version: String): String = "$plugin:${plugin}.gradle.plugin:$version"
-
-
-tasks.register("resolveAndLockAll") {
-    doFirst {
-        require(gradle.startParameter.isWriteDependencyLocks)
-    }
-    doLast {
-        configurations.filter {
-            // Add any custom filtering on the configurations to be resolved
-            it.isCanBeResolved && !it.name.startsWith("incrementalScalaAnalysis")
-        }.forEach { it.resolve() }
-    }
-}

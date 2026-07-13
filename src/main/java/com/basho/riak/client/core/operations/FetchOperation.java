@@ -300,7 +300,10 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
          */
         public Builder withTraceId(byte[] traceId)
         {
-            reqBuilder.setTraceId(ByteString.copyFrom(traceId));
+            // Commented out until OpenRiak riak_pb catches up and includes the
+            // distributed tracing trace_id field. Retained as a no-op for source
+            // compatibility; re-enable the line below once the proto has it.
+            // reqBuilder.setTraceId(ByteString.copyFrom(traceId));
             return this;
         }
 
@@ -311,7 +314,10 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
          */
         public Builder withBatchId(byte[] batchId)
         {
-            reqBuilder.setBatchId(ByteString.copyFrom(batchId));
+            // Commented out until OpenRiak riak_pb catches up and includes the
+            // distributed tracing batch_id field. Retained as a no-op for source
+            // compatibility; re-enable the line below once the proto has it.
+            // reqBuilder.setBatchId(ByteString.copyFrom(batchId));
             return this;
         }
 

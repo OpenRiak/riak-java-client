@@ -1,6 +1,4 @@
 import com.google.protobuf.gradle.proto
-import com.workday.blobitory.gradle.PrintVersionPlugin
-import com.workday.blobitory.gradle.PrintVersionPluginExtension
 import java.io.BufferedReader
 import java.io.FileInputStream
 import java.io.InputStreamReader
@@ -12,13 +10,8 @@ plugins {
     `java-common-conventions`
     // Configures the integration tests that can be run
     `integration-test-conventions`
-    // For common publishing settings
-    `publishing-conventions`
     // For generating the java classes from the proto files
     id("com.google.protobuf")
-
-    //apply pr validator
-    id("pr-validator")
 }
 
 dependencies {
@@ -44,31 +37,14 @@ dependencies {
 
 /**
  * ---------------------------------------------
- *              Lock File Update Tasks
- * ---------------------------------------------
- */
-val slackToken: String? by project
-tasks.register<LockFileUpdates>("lockfileUpdates")
-tasks.register<CheckoutLockFileUpdatePrTask>("checkoutLockFilePr")
-
-
-/**
- * ---------------------------------------------
  *              Base Config
  * ---------------------------------------------
  */
-group = "com.workday.riak"
+group = "com.basho.riak"
 
 base {
     // Sets the name of the jar
     archivesName.set("riak-client")
-}
-
-
-
-apply<PrintVersionPlugin>()
-configure<PrintVersionPluginExtension> {
-    version.set(project.version.toString())
 }
 
 /**
@@ -143,38 +119,3 @@ public final class RiakMessageCodes {
         logger.lifecycle("New file has been created: $outputFile")
     }
 }
-
-/**
- * ---------------------------------------------
- *              Publishing
- * ---------------------------------------------
- */
-publishing {
-    publications {
-        create<IvyPublication>("ivy") {
-            module = "wd-riak-client"
-
-            descriptor {
-                author {
-                    name.set("Document Storage Team")
-                }
-                description {
-                    text.set("Java Client for interacting with a Riak Cluster")
-                    homepage.set("https://bitbucket.internal.invalid/projects/DS/repos/workday-riak-client")
-                }
-            }
-
-            versionMapping {
-                usage(Usage.JAVA_API) {
-                    fromResolutionResult()
-                }
-                usage(Usage.JAVA_RUNTIME) {
-                    fromResolutionResult()
-                }
-            }
-
-            from(components["java"])
-        }
-    }
-}
-

@@ -44,7 +44,7 @@ tasks.withType<Jar> {
                 "Gradle-Version" to "Gradle ${gradle.gradleVersion}",
                 "Build-Jdk" to "${System.getProperty("java.version")} (${System.getProperty("java.vendor")} ${System.getProperty("java.vm.version")})",
                 "Build-OS" to "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}",
-                "Implementation-Vendor" to "Workday",
+                "Implementation-Vendor" to "OpenRiak",
                 "Implementation-Version" to project.version
         )
     }

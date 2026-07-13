@@ -1,38 +1,20 @@
-# Example Gradle properties for local development and automation tasks.
+# Optional Gradle properties for this project.
 #
-# Copy the properties you need into one of:
-#   - ~/.gradle/gradle.properties  (recommended for credentials)
-#   - ./gradle.properties          (do not commit real credential values)
-#
-# This file lists required property *names* only. Values below are placeholders.
-# Obtain real credentials through your team's Artifactory, Bitbucket/Jira, and
-# Slack access processes. Never commit live secrets to version control.
+# Copy any you need into ./gradle.properties or ~/.gradle/gradle.properties.
+# None are required for a normal `./gradlew build`.
 
 # -----------------------------------------------------------------------------
-# Artifactory (required for ./gradlew publish)
+# Integration tests (./gradlew itest)
 # -----------------------------------------------------------------------------
-artifactory_publish_codeline=trunk
-artifactory_user=YOUR_ARTIFACTORY_USERNAME
-artifactory_password=PLACEHOLDER_PASSWORD
+# Integration tests run against an already-running Riak node (not started by the build).
+# Enable backend-specific test groups as needed (default off):
+#riakTimeseries=true
+#riakTwoI=true
+#riakMapReduce=true
 
 # -----------------------------------------------------------------------------
-# Bitbucket / Jira (lockfileUpdates and checkoutLockFilePr tasks)
+# Release versioning (Reckon)
 # -----------------------------------------------------------------------------
-atlassianUser=YOUR_ATLASSIAN_USERNAME
-atlassianPassword=PLACEHOLDER_PASSWORD
-jiraEpic=DOCSTOR-XXXX
-
-# -----------------------------------------------------------------------------
-# Slack (lockfile update notifications)
-# -----------------------------------------------------------------------------
-slackToken=xoxb-PLACEHOLDER-SLACK-BOT-TOKEN
-slackChannel=#docstor-build
-
-# -----------------------------------------------------------------------------
-# PR build validator (CI injects these; not needed for normal local builds)
-# -----------------------------------------------------------------------------
-#validate=true
-#buildUrl=https://ci.example.workday.com/job/example/1/
-#buildStage=build
-#repositoryRevision=abc123def456
-#approveOrDeny=true
+# Used when cutting releases, e.g. ./gradlew -Preckon.stage=final -Preckon.scope=patch
+#reckon.stage=final
+#reckon.scope=patch

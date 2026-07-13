@@ -7,7 +7,23 @@ import org.ajoberstar.reckon.gradle.ReckonExtension
  * in the user manual at https://docs.gradle.org/6.8/userguide/multi_project_builds.html
  */
 
-rootProject.name = "workday-riak-client"
+/**
+ * Resolve all plugins and dependencies from public repositories
+ */
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+rootProject.name = "riak-java-client"
 
 include("dependencies")
 

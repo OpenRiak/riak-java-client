@@ -318,7 +318,10 @@ public class CloneOperation extends FutureOperation<CloneOperation.Response, Ria
          * @return a reference to this object.
          */
         public Builder withTraceId(byte[] traceId) {
-            reqBuilder.setTraceId(ByteString.copyFrom(traceId));
+            // Commented out until OpenRiak riak_pb catches up and includes the
+            // distributed tracing trace_id field. Retained as a no-op for source
+            // compatibility; re-enable the line below once the proto has it.
+            // reqBuilder.setTraceId(ByteString.copyFrom(traceId));
             return this;
         }
 
