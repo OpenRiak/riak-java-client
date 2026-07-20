@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Basho Technologies Inc
+ * Copyright 2022-2026 Workday, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,11 +79,13 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
 {
     private final Namespace namespace;
     private final int timeout;
+    private final int keysLimit;
 
     ListKeys(Builder builder) throws ListException
     {
         this.namespace = builder.namespace;
         this.timeout = builder.timeout;
+        this.keysLimit = builder.keysLimit;
 
         if (!builder.allowListing)
         {
@@ -111,6 +114,11 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
         if (timeout > 0)
         {
             builder.withTimeout(timeout);
+        }
+
+        if (keysLimit > 0)
+        {
+            builder.withKeysLimit(keysLimit);
         }
 
         builder.streamResults(streamResults);
@@ -169,6 +177,7 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
     {
         private final Namespace namespace;
         private int timeout;
+        private int keysLimit;
         private boolean allowListing;
 
         /**
@@ -215,6 +224,23 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
         }
 
         /**
+         * Limit the number of keys returned by the server.
+         * <p>
+         * When set, Riak returns at most {@code keysLimit} keys. Any keys up
+         * to the limit may be returned, in no particular order, and two
+         * identical requests may return different key sets.
+         * A non-positive value means unlimited (the field is not sent).
+         * </p>
+         * @param keysLimit the maximum number of keys to return.
+         * @return a reference to this object.
+         */
+        public Builder withKeysLimit(int keysLimit)
+        {
+            this.keysLimit = keysLimit;
+            return this;
+        }
+
+        /**
          * Construct the ListKeys command.
          * @return A ListKeys command.
          */
@@ -231,6 +257,7 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
         int result = 1;
         result = prime * result + (namespace != null ? namespace.hashCode() : 0);
         result = prime * result + timeout;
+        result = prime * result + keysLimit;
         return result;
     }
 
@@ -256,6 +283,10 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
             return false;
         }
         if (this.timeout != other.timeout)
+        {
+            return false;
+        }
+        if (this.keysLimit != other.keysLimit)
         {
             return false;
         }

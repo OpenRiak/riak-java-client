@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Basho Technologies Inc
+ * Copyright 2022-2026 Workday, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,6 +112,29 @@ public class ListKeysOperation extends PBStreamingFutureOperation<ListKeysOperat
                 throw new IllegalArgumentException("Timeout can not be zero or less");
             }
             reqBuilder.setTimeout(timeout);
+            return this;
+        }
+
+        /**
+         * Limit the number of keys returned by the server.
+         * <p>
+         * When set, Riak returns at most {@code keysLimit} keys. Any keys up
+         * to the limit may be returned, in no particular order, and two
+         * identical requests may return different key sets.
+         * A value of 0 means unlimited so is not a legal value here.
+         * Builder rejects non-positive values.
+         * Omit the call for unlimited.
+         * </p>
+         * @param keysLimit the maximum number of keys to return (must be &gt; 0).
+         * @return a reference to this object.
+         */
+        public Builder withKeysLimit(int keysLimit)
+        {
+            if (keysLimit <= 0)
+            {
+                throw new IllegalArgumentException("Keys limit can not be zero or less");
+            }
+            reqBuilder.setKeysLimit(keysLimit);
             return this;
         }
 
